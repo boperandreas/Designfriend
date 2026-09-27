@@ -76,7 +76,8 @@ Saker som saknas eller är tillfälliga i nuvarande version. Flytta upp till Nä
 
 - Webbläsarens taligenkänning är osäker i appar på iPhones hemskärm. Om den inte fungerar där visas tipset om tangentbordets mikrofon. Fungerar det dåligt: egen inspelning och tal till text i etapp R.
 
-- Inget sätt att ta bort eller byta ett enskilt foto i appen.
+- Inget sätt att ta bort eller byta ett enskilt foto i appen. Testanvändarens rum har dubbletter från före 2026-09-27 kväll; de gör ingen skada men kan städas när borttagning finns.
+- Rådgivaren ser högst 16 bilder per rum, de äldsta. Senare bilder utelämnas utan att användaren får veta det.
 - Användaren kan inte byta sitt lösenord själv, det görs i Supabase.
 - Var vi är går inte att läsa utan uppkoppling.
 - Supabases gratisprojekt pausas efter en tids inaktivitet.

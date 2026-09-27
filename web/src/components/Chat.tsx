@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { supabase, type Bild, type Meddelande } from '../lib/supabase'
-import { signedUrls, uploadImage } from '../lib/bilder'
+import { Dubblett, signedUrls, uploadImage } from '../lib/bilder'
+import { unsentImages } from '../lib/bilaga'
 import { sendMessage } from '../lib/chat'
 import { Svar } from './Svar'
 import { Diktera } from './Diktera'
@@ -28,11 +29,18 @@ export function Chat({ projektId }: { projektId: string }) {
     Promise.all([
       supabase.from('meddelande').select('id,roll,text,bilder,skapad').eq('projekt_id', projektId)
         .order('skapad', { ascending: true }).limit(300),
-      supabase.from('bild').select('id,typ,sokvag').eq('projekt_id', projektId),
+      supabase.from('bild').select('id,typ,sokvag,skapad').eq('projekt_id', projektId),
     ]).then(async ([m, b]) => {
       if (!aktiv) return
-      setMeddelanden((m.data ?? []) as Meddelande[])
-      setUrls(await signedUrls((b.data ?? []) as Bild[]))
+      const medd = (m.data ?? []) as Meddelande[]
+      const bilder = (b.data ?? []) as Bild[]
+      const u = await signedUrls(bilder)
+      if (!aktiv) return
+      setMeddelanden(medd)
+      setUrls(u)
+      // Photos uploaded but not yet sent come back to the composer.
+      setBilagor(unsentImages(bilder.map((x) => ({ ...x, skapad: x.skapad ?? '' })), medd)
+        .map((x) => ({ id: x.id, url: u[x.id], typ: x.typ })).filter((x) => x.url))
       setLaddar(false)
     })
     return () => { aktiv = false }
@@ -48,6 +56,7 @@ export function Chat({ projektId }: { projektId: string }) {
     if (!filer.length) return
     setFel(null)
     setLaddarUpp((n) => n + filer.length)
+    let dubbletter = 0
     for (const fil of filer) {
       try {
         const bild = await uploadImage(fil, projektId, typ)
@@ -55,11 +64,13 @@ export function Chat({ projektId }: { projektId: string }) {
         setUrls((u) => ({ ...u, [bild.id]: url }))
         setBilagor((b) => [...b, { id: bild.id, url, typ }])
       } catch (err) {
-        setFel(err instanceof Error ? err.message : 'Bilden kunde inte laddas upp.')
+        if (err instanceof Dubblett) dubbletter++
+        else setFel(err instanceof Error ? err.message : 'Bilden kunde inte laddas upp.')
       } finally {
         setLaddarUpp((n) => n - 1)
       }
     }
+    if (dubbletter) setFel(dubbletter === 1 ? 'Den bilden finns redan i rummet.' : `${dubbletter} av bilderna finns redan i rummet.`)
   }
 
   async function skicka() {

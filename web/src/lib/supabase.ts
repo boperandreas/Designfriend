@@ -9,4 +9,4 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 export interface Projekt { id: string; namn: string; skapad: string }
 export interface Meddelande { id?: string; roll: 'user' | 'assistant'; text: string; bilder: string[]; skapad?: string }
-export interface Bild { id: string; typ: 'rum' | 'moodboard'; sokvag: string }
+export interface Bild { id: string; typ: 'rum' | 'moodboard'; sokvag: string; skapad?: string }

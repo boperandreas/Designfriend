@@ -1,5 +1,6 @@
 import { supabase, type Bild } from './supabase'
 import { targetSize } from './storlek'
+import { sha256 } from './bilaga'
 
 
 /**
@@ -22,20 +23,30 @@ export async function prepareImage(file: File): Promise<Blob> {
   )
 }
 
+/** Thrown when the same photo is already in the project. */
+export class Dubblett extends Error {}
+
 export async function uploadImage(file: File, projektId: string, typ: Bild['typ']): Promise<Bild> {
   const { data: userData } = await supabase.auth.getUser()
   const uid = userData.user?.id
   if (!uid) throw new Error('Du behöver logga in igen.')
+  const hash = await sha256(await file.arrayBuffer())
+  const finns = await supabase.from('bild').select('id').eq('projekt_id', projektId).eq('hash', hash).limit(1)
+  if (finns.data?.length) throw new Dubblett()
   const blob = await prepareImage(file)
   const sokvag = `${uid}/${projektId}/${crypto.randomUUID()}.jpg`
   const up = await supabase.storage.from('bilder').upload(sokvag, blob, { contentType: 'image/jpeg' })
   if (up.error) throw new Error('Bilden kunde inte laddas upp. Försök igen.')
   const { data, error } = await supabase
     .from('bild')
-    .insert({ projekt_id: projektId, typ, sokvag })
-    .select('id,typ,sokvag')
+    .insert({ projekt_id: projektId, typ, sokvag, hash })
+    .select('id,typ,sokvag,skapad')
     .single()
-  if (error || !data) throw new Error('Bilden kunde inte sparas. Försök igen.')
+  if (error || !data) {
+    await supabase.storage.from('bilder').remove([sokvag])
+    if (error?.code === '23505') throw new Dubblett()
+    throw new Error('Bilden kunde inte sparas. Försök igen.')
+  }
   return data as Bild
 }
 
