@@ -32,7 +32,7 @@ Läs innan du börjar:
    - Skala ner foton till cirka 2000 px på längsta sidan innan uppladdning.
    - Radering av konto raderar all användardata, även foton och minne.
    - Lagra aldrig kön, hälsa eller omdömen om personen. Lärdomar om arbetssätt beskriver vad som hjälper, aldrig vem personen är.
-6. **Inloggning med engångskod**, inte inloggningslänk. En webbapp på hemskärmen i iPhone har egen lagring, skild från Safari. Bara inbjudna e-postadresser får logga in.
+6. **Ingen inloggningslänk.** En webbapp på hemskärmen i iPhone har egen lagring, skild från Safari, så en länk i ett mejl loggar in fel ställe. I etapp 1a loggar man in med e-post och lösenord som utvecklaren sätter. Engångskod via mejl kräver egen SMTP och kan komma senare. Nya användare kan inte registrera sig själva.
 7. **Bilder i ett förslag**: det användaren markerat som Behåll ska vara pixelidentiskt. Kopiera tillbaka originalets pixlar utanför masken efter generering.
 8. **Allt användartext i gränssnittet är på svenska.**
 
@@ -56,4 +56,4 @@ Läs innan du börjar:
 
 ## Status
 
-Etapp 1a: samtalet i webbappen. Inloggning med kod, chatt med strömmade svar, foton av rummet och moodboard, projektminne och Var vi är, radering av konto. Idéskisser, markering av föremål, smakminne och katalog kommer i senare etapper.
+Etapp 1a: samtalet i webbappen. Inloggning med e-post och lösenord, chatt med strömmade svar, foton av rummet och moodboard, projektminne och Var vi är, radering av konto. Idéskisser, markering av föremål, smakminne och katalog kommer i senare etapper.

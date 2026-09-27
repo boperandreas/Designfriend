@@ -14,13 +14,10 @@ Hemliga nycklar klistras bara in i respektive tjänst, aldrig i chatten, i koden
 
 I Supabase-projektet:
 
-1. **Authentication → Sign In / Providers:** Email ska vara påslaget. Stäng av **Allow new users to sign up**. Då kan bara personer du lagt till logga in.
-2. **Authentication → Emails → Templates → Magic link:** ersätt innehållet så att mejlet visar koden. Till exempel:
-   - Ämne: `Din kod till Designfriend`
-   - Text: `<p>Din kod är <strong>{{ .Token }}</strong></p><p>Den gäller en kort stund.</p>`
+1. **Authentication → Sign In / Providers:** stäng av **Allow new users to sign up** och klicka på **Save changes**. Email ska stå som Enabled. Då kan bara personer du lagt till logga in.
+2. **Authentication → Users → Add user → Create new user:** skriv e-postadress och ett lösenord, och kryssa i **Auto Confirm User**. Gör det för Susie och för dig själv. Lämna lösenordet till Susie muntligt eller i ett sms, inte i ett mejl.
 
-   Appen loggar in med kod, eftersom en webbapp på iPhones hemskärm inte kan ta emot en inloggningslänk.
-3. **Authentication → Users → Add user → Create new user:** lägg till Susies e-postadress och kryssa i **Auto Confirm User**. Lägg gärna till dig själv också, för att testa.
+Appen loggar in med e-post och lösenord. Inga mejl skickas, så mejlmallarna behöver inte ändras. En inloggningslänk skulle inte fungera, eftersom en webbapp på iPhones hemskärm har egen lagring skild från Safari.
 
 ## 3. Supabase: hemligheten för Claude
 
@@ -58,7 +55,7 @@ Tillbaka i Supabase: **Authentication → URL Configuration → Site URL**, läg
 
 1. Öppna adressen i Safari på telefonen.
 2. Tryck på dela-knappen och välj **Lägg till på hemskärmen**.
-3. Öppna appen från hemskärmen, skriv e-postadressen och koden från mejlet.
+3. Öppna appen från hemskärmen och logga in med e-post och lösenord.
 4. Ladda upp ett foto av ett rum och skriv några rader.
 
 Sedan skickar du adressen till Susie.
@@ -67,8 +64,6 @@ Sedan skickar du adressen till Susie.
 
 | Det som händer | Troligen |
 |---|---|
-| "Den här adressen är inte inbjuden" | Adressen finns inte under Authentication → Users |
-| Mejlet innehåller en länk men ingen kod | Mejlmallen i steg 2 är inte ändrad |
+| "E-postadressen eller lösenordet stämmer inte" | Kontrollera användaren under Authentication → Users, eller sätt ett nytt lösenord där |
 | "Vännen svarar inte just nu" | `ANTHROPIC_API_KEY` saknas eller är fel, eller modellnamnet stämmer inte. Se Edge Functions → chat → Logs |
 | Arbetsflödet i GitHub misslyckas | Någon av hemligheterna i steg 4 saknas |
-| Koden kommer inte fram | Supabases inbyggda mejl skickar bara ett fåtal mejl i timmen. Vänta en stund |
