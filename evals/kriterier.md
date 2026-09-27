@@ -17,6 +17,7 @@ Varje kriterium har ett id som används i testfallen.
 | S7 | Tid från första foto till första förslag | under 2 min (appen) |
 | S8 | Samma obesvarade fråga upprepas i flera svar i rad | 0 |
 | S9 | Påpekar att en fråga redan är ställd ("samma svar som sist") | 0 |
+| S10 | Hänvisar till bilder med nummer i stället för med vad de visar | 0 |
 
 ## Råd och ärlighet
 
