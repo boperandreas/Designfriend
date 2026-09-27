@@ -52,6 +52,11 @@ if (!projekt) {
   }), "create room")).json())[0];
 }
 
+// Start every run with an empty conversation, so the same test messages are
+// not answered as repeats. The photo is kept, so it is not re-uploaded.
+await must(await fetch(`${URL_}/rest/v1/meddelande?projekt_id=eq.${projekt.id}`, { method: "DELETE", headers: h }), "clear messages");
+await must(await fetch(`${URL_}/rest/v1/projektminne?projekt_id=eq.${projekt.id}`, { method: "DELETE", headers: h }), "clear memory");
+
 // Synthetic room photo, uploaded once.
 const bilder = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&select=id`, { headers: h }), "list photos")).json();
 let nyBild = [];

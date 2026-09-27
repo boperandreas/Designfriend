@@ -43,6 +43,18 @@ Format:
 **Åtgärd:** Statisk systemprompt. Minne och tid skickas med senaste användarmeddelandet. Foton laddas upp en gång till Files API och refereras med id. Cache med en timmes livslängd. Loggraden `chat_timing` visar cacheträffar och tider.
 **Regel:** Början av varje anrop (tools, system, foton, historik) ska vara identisk mellan turer. Kontrollera `cache_read_tokens` i loggen efter ändringar i anropet. Regel 9 i `AGENTS.md`.
 
+### 2026-09-27 · Röktestet ställde samma frågor i samma samtal
+**Hände:** Andra körningen fortsatte samtalet från den första. Vännen svarade "samma svar som sist" och lät irriterad.
+**Orsak:** Testrummet återanvändes med historik och projektminne.
+**Åtgärd:** Röktestet tömmer samtal och projektminne i testrummet innan varje körning. Fotot behålls.
+**Regel:** Ett test som upprepas ska börja från samma läge varje gång.
+
+### 2026-09-27 · Sonnet 5 tänker länge innan första ordet
+**Hände:** Röktestet visade att cachen fungerade, men det tog 6 till 23 sekunder till första ordet och 7 till 18 sekunder mellan att Claude började och att text kom. Första svaret var 1 668 tokens trots att prompten ber om korta svar.
+**Orsak:** Claude Sonnet 5 har adaptivt tänkande påslaget som standard med effort `high`. Tänkandet sker före texten och räknas som output.
+**Åtgärd:** `output_config.effort` sätts till `low` (inställbart med `ANTHROPIC_EFFORT`). Loggen visar `thinking_tokens` och `thinking_start_ms`. Vid 400 faller anropet tillbaka till en enkel fråga utan verktyg och effort.
+**Regel:** Kontrollera modellens standardinställningar för tänkande och effort innan den används i ett samtal där svarstiden känns. Mät med röktestet efter varje byte av modell eller inställning.
+
 ### 2026-09-27 · Identity federation i stället för API-nyckel
 **Hände:** Konsolen föreslog identity federation när nyckeln skapades.
 **Orsak:** Det fungerar bara från GCP, AWS, Azure och GitHub Actions, inte från Supabase Edge Functions.

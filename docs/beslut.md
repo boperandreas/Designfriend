@@ -57,3 +57,8 @@ Format:
 **Varför:** Användaren ska kunna prata in sina meddelanden. Webbläsarens inbyggda taligenkänning (Web Speech API) har svenska, kostar inget och kräver inget nytt konto. Texten hamnar i fältet och kan rättas innan den skickas.
 **Följder:** Talet tolkas av webbläsarens leverantör (Apple i Safari, Google i Chrome), inte av oss. Inget ljud lagras i appen. Stödet varierar mellan webbläsare; där det saknas visar knappen hur man dikterar med tangentbordets mikrofon.
 **Alternativ som valdes bort:** Egen inspelning och tal till text via separat tjänst (KB-Whisper, ElevenLabs). Kan komma med röstläget i etapp R.
+
+### 2026-09-27 · Låg tankenivå (effort low) för samtalet
+**Varför:** Standardnivån `high` gav 6 till 23 sekunder till första ordet. I ett samtal som ska kännas som en vän väger svarstiden tungt, och de flesta turer är enkla.
+**Följder:** Modellen kan hoppa över tänkandet på enkla frågor och tänker kort på svåra. Om resonemangen blir sämre prövas `medium`. Ändras med hemligheten `ANTHROPIC_EFFORT` utan ny kod.
+**Alternativ som valdes bort:** Stänga av tänkandet helt (sämre resonemang), byta till en snabbare modell (Claude ska resonera, och Sonnet ger bättre råd).
