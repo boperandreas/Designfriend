@@ -37,6 +37,8 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 - [x] Foton av rummet och moodboard, nedskalade och utan platsdata
 - [x] Projektminne och Var vi är, flera rum, radera konto
 - [x] Driftsättning via GitHub Actions och Vercel
+- [x] Mikrofonknapp för diktering på svenska
+- [ ] Diktering provad på iPhone, både i Safari och som app på hemskärmen
 - [ ] Svarstid mätt och godkänd (steg 1 ovan)
 - [ ] Tak per användare och dag (steg 4 ovan)
 
@@ -71,6 +73,8 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 ## Kända luckor
 
 Saker som saknas eller är tillfälliga i nuvarande version. Flytta upp till Nästa steg när de blir viktiga.
+
+- Webbläsarens taligenkänning är osäker i appar på iPhones hemskärm. Om den inte fungerar där visas tipset om tangentbordets mikrofon. Fungerar det dåligt: egen inspelning och tal till text i etapp R.
 
 - Inget sätt att ta bort eller byta ett enskilt foto i appen.
 - Användaren kan inte byta sitt lösenord själv, det görs i Supabase.

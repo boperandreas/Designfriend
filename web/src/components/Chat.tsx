@@ -3,6 +3,7 @@ import { supabase, type Bild, type Meddelande } from '../lib/supabase'
 import { signedUrls, uploadImage } from '../lib/bilder'
 import { sendMessage } from '../lib/chat'
 import { Svar } from './Svar'
+import { Diktera } from './Diktera'
 
 interface Bilaga { id: string; url: string; typ: Bild['typ'] }
 
@@ -15,6 +16,7 @@ export function Chat({ projektId }: { projektId: string }) {
   const [laddarUpp, setLaddarUpp] = useState(0)
   const [svarar, setSvarar] = useState(false)
   const [fel, setFel] = useState<string | null>(null)
+  const [avbryt, setAvbryt] = useState(0)
   const slut = useRef<HTMLDivElement>(null)
   const rumInput = useRef<HTMLInputElement>(null)
   const moodInput = useRef<HTMLInputElement>(null)
@@ -64,6 +66,7 @@ export function Chat({ projektId }: { projektId: string }) {
     const t = text.trim()
     if ((!t && !bilagor.length) || svarar) return
     const ids = bilagor.map((b) => b.id)
+    setAvbryt((n) => n + 1)
     setText('')
     setBilagor([])
     setFel(null)
@@ -137,6 +140,7 @@ export function Chat({ projektId }: { projektId: string }) {
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer: fine)').matches) { e.preventDefault(); skicka() } }}
           />
+          <Diktera text={text} onText={setText} onFel={setFel} disabled={svarar} avbryt={avbryt} />
           <button type="button" className="primary" onClick={skicka}
             disabled={svarar || laddarUpp > 0 || (!text.trim() && !bilagor.length)}>
             Skicka
