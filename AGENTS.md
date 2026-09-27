@@ -12,6 +12,8 @@ Läs innan du börjar:
 - `prompts/radgivaren.md` – rådgivarens systemprompt. Rådgivarens beteende styrs härifrån, inte av logik i koden.
 - `docs/samtal-exempel.md` – förebild för tonen.
 - `evals/` – testsviten.
+- `docs/lardomar.md` – det vi lärt oss av misstag. Upprepa dem inte.
+- `docs/beslut.md` – beslut och skälen bakom dem. Ändra inte ett beslut utan att lägga till ett nytt som förklarar varför.
 
 ## Stack
 
@@ -38,6 +40,9 @@ Läs innan du börjar:
 9. **Promptcachen styr svarstiden.** Systemprompten och fotona ska vara identiska mellan anrop. Lägg aldrig något som ändras (minne, datum, tid sedan förra meddelandet) i systemprompten. Det skickas med det senaste användarmeddelandet. Foton skickas som Files API-id, aldrig som nya signerade adresser.
 
 ## Arbetssätt i repot
+
+- **Lär av misstag.** När något går fel, tar oväntat lång tid eller överraskar: lägg till en post i `docs/lardomar.md` i samma pull request. När samma lärdom återkommer, gör den till en regel här.
+- **Dokumentera beslut.** Nya vägval läggs i `docs/beslut.md` med skäl och bortvalda alternativ.
 
 - Små pull requests, en sak i taget. Beskriv i PR:en vad som ändrats och hur det testats.
 - Etapperna i `docs/design.md` styr ordningen. Bygg inte funktioner från senare etapper utan att det är bestämt.
