@@ -43,6 +43,12 @@ Format:
 **Åtgärd:** Statisk systemprompt. Minne och tid skickas med senaste användarmeddelandet. Foton laddas upp en gång till Files API och refereras med id. Cache med en timmes livslängd. Loggraden `chat_timing` visar cacheträffar och tider.
 **Regel:** Början av varje anrop (tools, system, foton, historik) ska vara identisk mellan turer. Kontrollera `cache_read_tokens` i loggen efter ändringar i anropet. Regel 9 i `AGENTS.md`.
 
+### 2026-09-27 · Konfliktmarkeringar checkades in
+**Hände:** En sammanslagning av `main` in i en gren gav en konflikt i `plan.md`, men nästa steg i samma kommando checkade in allt med `git add -A`, inklusive konfliktmarkeringarna.
+**Orsak:** Kommandon kedjades utan att kontrollera att sammanslagningen lyckades.
+**Åtgärd:** Konflikten löstes i en ny commit.
+**Regel:** Kör aldrig `git add -A` efter en sammanslagning utan att först kontrollera `git status` och söka efter `<<<<<<<`. Kedja inte merge och commit i samma kommando.
+
 ### 2026-09-27 · Röktestet ställde samma frågor i samma samtal
 **Hände:** Andra körningen fortsatte samtalet från den första. Vännen svarade "samma svar som sist" och lät irriterad.
 **Orsak:** Testrummet återanvändes med historik och projektminne.

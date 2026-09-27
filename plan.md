@@ -16,13 +16,7 @@ Senast uppdaterad: 2026-09-27
 
 ## Nästa steg, i ordning
 
-<<<<<<< HEAD
-1. **Mät svarstiden.** Agenten kör arbetsflödet Röktest (kräver testanvändare och två hemligheter, se `docs/driftsattning.md`) och läser `chat_timing` via connectorn. Från andra meddelandet ska `cache_read_tokens` vara högt och `first_token_ms` låg. Notera siffrorna här.
-=======
-0. **Mätning 2026-09-27 med röktestet (effort high):** första ordet efter 22,7 s, 9,2 s och 6,4 s i tre meddelanden. Cachen träffar från andra meddelandet. Tänkandet före texten är största orsaken. Grenen `tankeniva` sätter effort `low`; mät igen efter sammanslagning.
-
-1. **Mät svarstiden.** Utvecklaren skickar tre eller fyra meddelanden i appen. Agenten läser `chat_timing` via connectorn. Från andra meddelandet ska `cache_read_tokens` vara högt och `first_token_ms` låg. Notera siffrorna här.
->>>>>>> a0b98ef0e1e3ac99797eb4cee2036cac8a44dcb5
+1. **Svarstiden är mätt (2026-09-27, röktestet).** Effort high: första ordet efter 22,7 s, 9,2 s och 6,4 s. Effort low: 4,6 s, 1,9 s och 4,9 s, svar på cirka 150 tokens i stället för 1 668. Kvar är variation i Anthropics svarstid (1,5 till 4,7 s till första byte) och 0,2 till 0,6 s i databasen. Kör röktestet efter varje ändring som kan påverka tiden.
 2. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.
 3. **Prompt v0.2.** Justera `prompts/radgivaren.md` efter reaktionerna. Granska mot `evals/kriterier.md` och testfall 001 innan sammanslagning.
 4. **Tak per användare och dag.** Spärr i `chat`-funktionen mot för många anrop, så att en loop eller ett fel inte tömmer saldot. Designen kräver det från start och det saknas i 1a.
@@ -45,7 +39,7 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 - [x] Driftsättning via GitHub Actions och Vercel
 - [x] Mikrofonknapp för diktering på svenska
 - [ ] Diktering provad på iPhone, både i Safari och som app på hemskärmen
-- [ ] Svarstid mätt och godkänd (steg 1 ovan)
+- [x] Svarstid mätt (första ordet 2 till 5 s med effort low)
 - [ ] Tak per användare och dag (steg 4 ovan)
 
 ### Etapp 1b · Idéskisser i Utforska-läget
