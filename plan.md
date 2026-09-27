@@ -11,18 +11,17 @@ Senast uppdaterad: 2026-09-27
 ## Läget just nu
 
 - **Etapp 1a är i drift.** Webbappen ligger på Vercel och serverfunktionerna i Supabase (EU, Irland). Två användare: utvecklaren och första testanvändaren. Inloggning med e-post och lösenord.
-- **Väntar på sammanslagning:** grenen `snabbare-svar` med cachebar prompt, foton via Files API, tidsmätning (`chat_timing`) samt `docs/lardomar.md`, `docs/beslut.md` och den här planen.
-- **Känt problem:** svaren upplevdes långsamma i första versionen. Orsaken är hittad och rättad på `snabbare-svar`, men inte mätt i drift ännu.
+- **Snabbare svar i drift sedan 2026-09-27 18:35:** cachebar prompt, foton via Files API, tidsmätning (`chat_timing`). Första versionen tog 26 s för ett helt svar. Nya versionen inte mätt ännu.
+- **Agenten läser loggar själv** via Supabase-connectorn, se `AGENTS.md`.
 
 ## Nästa steg, i ordning
 
-1. **Slå ihop `snabbare-svar`** och kontrollera att arbetsflödet Deploy Supabase blir grönt.
-2. **Mät svarstiden.** Skicka tre eller fyra meddelanden i appen och läs raderna `chat_timing` i Supabase (Edge Functions → chat → Logs). Från andra meddelandet ska `cache_read_tokens` vara högt och `first_token_ms` klart lägre än i första. Notera siffrorna här.
-3. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.
-4. **Prompt v0.2.** Justera `prompts/radgivaren.md` efter reaktionerna. Granska mot `evals/kriterier.md` och testfall 001 innan sammanslagning.
-5. **Tak per användare och dag.** Spärr i `chat`-funktionen mot för många anrop, så att en loop eller ett fel inte tömmer saldot. Designen kräver det från start och det saknas i 1a.
-6. **Automatisk testsvit.** Skript som spelar upp `evals/fall/` mot prompten via API:et och låter en separat bedömarmodell gå igenom svaren mot kriterierna. Körs i CI när prompten ändras.
-7. **Bildtestet i etapp 0.** Tio rum, fem moodboards, tre bildmodeller (gpt-image-2, Nano Banana 2, FLUX.2 pro edit), tre rum med soffan behållen och bara mattan bytt. Färgtrohet väger tyngst. Resultatet väljer bildmodell och läggs i `docs/beslut.md`.
+1. **Mät svarstiden.** Utvecklaren skickar tre eller fyra meddelanden i appen. Agenten läser `chat_timing` via connectorn. Från andra meddelandet ska `cache_read_tokens` vara högt och `first_token_ms` låg. Notera siffrorna här.
+2. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.
+3. **Prompt v0.2.** Justera `prompts/radgivaren.md` efter reaktionerna. Granska mot `evals/kriterier.md` och testfall 001 innan sammanslagning.
+4. **Tak per användare och dag.** Spärr i `chat`-funktionen mot för många anrop, så att en loop eller ett fel inte tömmer saldot. Designen kräver det från start och det saknas i 1a.
+5. **Automatisk testsvit.** Skript som spelar upp `evals/fall/` mot prompten via API:et och låter en separat bedömarmodell gå igenom svaren mot kriterierna. Körs i CI när prompten ändras.
+6. **Bildtestet i etapp 0.** Tio rum, fem moodboards, tre bildmodeller (gpt-image-2, Nano Banana 2, FLUX.2 pro edit), tre rum med soffan behållen och bara mattan bytt. Färgtrohet väger tyngst. Resultatet väljer bildmodell och läggs i `docs/beslut.md`.
 
 ## Etapper
 
@@ -31,15 +30,15 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 ### Etapp 0 · Bevisa kärnan
 - [x] Designdokument, systemprompt v0.1, testsvit med kriterier och testfall 001
 - [ ] Samtalstest med testanvändaren (görs i appen i stället för i ett Claude-projekt)
-- [ ] Bildtest och val av bildmodell (steg 7 ovan)
+- [ ] Bildtest och val av bildmodell (steg 6 ovan)
 
 ### Etapp 1a · Samtalet i webbappen
 - [x] Webbapp på hemskärmen, inloggning, chatt med strömmade svar
 - [x] Foton av rummet och moodboard, nedskalade och utan platsdata
 - [x] Projektminne och Var vi är, flera rum, radera konto
 - [x] Driftsättning via GitHub Actions och Vercel
-- [ ] Svarstid mätt och godkänd (steg 2 ovan)
-- [ ] Tak per användare och dag (steg 5 ovan)
+- [ ] Svarstid mätt och godkänd (steg 1 ovan)
+- [ ] Tak per användare och dag (steg 4 ovan)
 
 ### Etapp 1b · Idéskisser i Utforska-läget
 - [ ] Bildmodell anropad från Edge Function som bakgrundsjobb, resultat via Realtime

@@ -47,6 +47,14 @@ Läs innan du börjar:
 - **Lär av misstag.** När något går fel, tar oväntat lång tid eller överraskar: lägg till en post i `docs/lardomar.md` i samma pull request. När samma lärdom återkommer, gör den till en regel här.
 - **Dokumentera beslut.** Nya vägval läggs i `docs/beslut.md` med skäl och bortvalda alternativ.
 
+## Supabase via connector
+
+Agenten har åtkomst till Supabase-projektet via Claude-connectorn (project id `ocdmhgjmbtbfxyifjxcd`).
+
+- **Läs själv, be inte utvecklaren kopiera.** Loggar (`query_logs`, sök på `chat_timing`), funktioner, migreringar och rådgivare läses direkt.
+- **Läs aldrig användarnas samtal, foton eller projektminne** utan att utvecklaren uttryckligen ber om det. Tabellerna `meddelande`, `bild` och `projektminne` innehåller verkliga personers data. Räkna rader och läs tekniska fält vid behov, inte innehåll.
+- **Ändra inget via connectorn.** Migreringar och funktioner går via repot, pull request och GitHub Actions, så att utvecklaren granskar dem först. Undantag bara om utvecklaren ber om det.
+
 ## Dagsavslut
 
 När utvecklaren säger att hen är klar för dagen ("klar för dagen", "vi slutar här", "godnatt" eller liknande), gör detta innan sessionen avslutas:

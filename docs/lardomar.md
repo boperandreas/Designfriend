@@ -96,6 +96,17 @@ Format:
 ### 2026-09-27 · CI körs på pull request, inte på push till gren
 **Regel:** Öppna en pull request för att få CI att köra. Driftsättning av Supabase sker bara när `main` ändras.
 
+### 2026-09-27 · Utvecklaren fick kopiera loggrader åt agenten
+**Hände:** Agenten bad utvecklaren öppna loggar i Supabase och klistra in dem.
+**Orsak:** Agentens arbetsyta når inte Supabase direkt.
+**Åtgärd:** Supabase-connectorn ansluten i claude.ai. Agenten läser loggar, funktioner och migreringar själv.
+**Regel:** Be aldrig utvecklaren kopiera något agenten kan läsa via en connector. Leta efter en connector först.
+
+### 2026-09-27 · Commits efter sammanslagning följde inte med
+**Hände:** Lärdomar, plan och dagsavslut lades på grenen `snabbare-svar` efter att pull requesten redan slagits ihop, och hamnade aldrig i `main`.
+**Åtgärd:** Togs in via grenen `supabase-koppling`.
+**Regel:** Kontrollera att pull requesten är öppen innan fler commits läggs på grenen. Efter sammanslagning: ny gren från `main`.
+
 ### 2026-09-27 · Agentens miljö når inte Supabase direkt
 **Hände:** Försök att anropa funktionerna från agentens arbetsyta nekades av nätverksspärren. Samma för JSR-paket i Deno-tester.
 **Åtgärd:** Kontroll via GitHub Actions och loggarna i Supabase. `node:assert` i stället för `jsr:@std/assert`.

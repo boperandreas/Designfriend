@@ -48,3 +48,7 @@ Format:
 
 ### 2026-09-27 · Inga verkliga personer i repot
 **Varför:** Repot kan vara publikt. Foton, namn och samtal från testanvändare hålls utanför. Exempel och testfall är påhittade eller avidentifierade.
+
+### 2026-09-27 · Supabase-connectorn för att läsa, repot för att ändra
+**Varför:** Agenten ska kunna läsa loggar och status själv utan att utvecklaren kopierar. Ändringar ska fortsatt granskas i pull requests.
+**Följder:** Connectorn ger bred åtkomst. Agenten läser inte användarnas samtal, foton eller minne utan uttrycklig begäran.
