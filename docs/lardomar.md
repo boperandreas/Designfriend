@@ -135,3 +135,10 @@ Format:
 **Hände:** Försök att anropa funktionerna från agentens arbetsyta nekades av nätverksspärren. Samma för JSR-paket i Deno-tester.
 **Åtgärd:** Kontroll via GitHub Actions och loggarna i Supabase. `node:assert` i stället för `jsr:@std/assert`.
 **Regel:** Verifiera driftsättning via Actions och `chat_timing`-loggen. Be användaren klistra in loggrader när det behövs.
+
+### 2026-09-27 · Uppladdade men oskickade foton försvann ur vyn
+**Hände:** Testanvändaren laddade upp rumsfotot och elva moodboardbilder men skickade inget meddelande. När hon öppnade appen igen syntes inga bilder, så hon laddade upp samma bilder en gång till. Rådgivaren såg båda omgångarna och skrev "bild 1 (samma som bild 13)". Utvecklaren trodde att hans egna tester hade blandats in i hennes konto.
+**Orsak:** Bilder visades bara i skrivfältet tills de skickades. Men de sparades direkt i projektet och följde med till rådgivaren oavsett.
+**Kontroll:** Via connectorn, bara antal, tider och filstorlekar. Varje konto har eget rum, eget minne och egna bilder. Inga bilder eller minnen hör till fel konto. Dubbletterna hade identisk filstorlek.
+**Åtgärd:** Oskickade bilder visas igen i skrivfältet när rummet öppnas. Samma foto två gånger i ett rum stoppas med en kontrollsumma (`bild.hash`).
+**Regel:** Det användaren har sparat ska synas i appen. Visar gränssnittet mindre än rådgivaren ser, blir svaren obegripliga.
