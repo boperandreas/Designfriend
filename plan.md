@@ -86,3 +86,5 @@ Saker som saknas eller är tillfälliga i nuvarande version. Flytta upp till Nä
 2. Kontrollera öppna pull requests och grenar i repot.
 3. Fråga om det finns nya loggrader, reaktioner från testanvändaren eller idéer sedan sist.
 4. Föreslå nästa steg utifrån listan ovan, eller det som ändrats.
+
+När dagen är slut gör agenten ett dagsavslut enligt `AGENTS.md` och uppdaterar den här filen.
