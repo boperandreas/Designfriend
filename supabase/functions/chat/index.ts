@@ -18,6 +18,9 @@
 //   ANTHROPIC_MODEL    optional, default "claude-sonnet-5"
 //   MEMORY_MODEL       optional, default "claude-haiku-4-5-20251001"
 //   WEB_SEARCH_TOOL    optional, default "web_search_20250305"; "off" disables
+//   ANTHROPIC_EFFORT   optional, default "low": how much the model thinks before
+//                      answering (low, medium, high, xhigh, max). Sonnet 5 thinks at
+//                      "high" by default, which delays the first word by many seconds.
 
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -32,6 +35,7 @@ declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 const MODEL = Deno.env.get("ANTHROPIC_MODEL") ?? "claude-sonnet-5";
 const MEMORY_MODEL = Deno.env.get("MEMORY_MODEL") ?? "claude-haiku-4-5-20251001";
 const WEB_SEARCH_TOOL = Deno.env.get("WEB_SEARCH_TOOL") ?? "web_search_20250305";
+const EFFORT = Deno.env.get("ANTHROPIC_EFFORT") ?? "low";
 const HISTORY_LIMIT = 40;
 const IMAGE_LIMIT = 16;
 const SYSTEM = buildSystem();
@@ -222,8 +226,10 @@ Deno.serve(async (req) => {
 
   const baseBody: Block = {
     model: MODEL,
-    max_tokens: 2000,
+    max_tokens: 4000,
     stream: true,
+    thinking: { type: "adaptive" },
+    output_config: { effort: EFFORT },
     system: [{ type: "text", text: SYSTEM, cache_control: CACHE }],
     messages,
   };
@@ -235,10 +241,13 @@ Deno.serve(async (req) => {
   }];
 
   let res = await callClaude(tools ? { ...baseBody, tools } : baseBody, apiKey);
-  if (!res.ok && res.status === 400 && tools) {
-    console.error("claude 400 with web search, retrying without", await res.text());
-    timing.retried_without_tools = true;
-    res = await callClaude(baseBody, apiKey);
+  if (!res.ok && res.status === 400) {
+    // Fall back to the plainest request that has worked before, so a rejected
+    // option (tool version, effort level) never takes the whole app down.
+    console.error("claude 400, retrying without tools and effort", await res.text());
+    timing.fallback = true;
+    const { thinking: _t, output_config: _o, ...plain } = baseBody;
+    res = await callClaude(plain, apiKey);
   }
   timing.claude_headers_ms = ms();
   if (!res.ok || !res.body) {
@@ -289,8 +298,11 @@ Deno.serve(async (req) => {
               // A new text block after a web search: keep the text readable.
               svar += " ";
               controller.enqueue(encoder.encode(" "));
+            } else if (data.type === "content_block_start" && data.content_block?.type === "thinking") {
+              if (timing.thinking_start_ms === undefined) timing.thinking_start_ms = ms();
             } else if (data.type === "message_delta") {
               timing.output_tokens = data.usage?.output_tokens;
+              timing.thinking_tokens = data.usage?.output_tokens_details?.thinking_tokens;
             } else if (data.type === "error") {
               console.error("stream error", data);
             }
@@ -301,7 +313,7 @@ Deno.serve(async (req) => {
       }
 
       timing.total_ms = ms();
-      console.log(JSON.stringify({ event: "chat_timing", model: MODEL, ...timing }));
+      console.log(JSON.stringify({ event: "chat_timing", model: MODEL, effort: EFFORT, ...timing }));
 
       const slutsvar = svar.trim();
       if (slutsvar) {
