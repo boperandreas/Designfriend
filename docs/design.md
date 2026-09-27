@@ -267,7 +267,7 @@ Rösten gör vännen användbar när händerna är upptagna. Krav: Claude resone
 
 Uppskattad tid från tystnad till första ljud: cirka 1–2 s. Ska mätas. Realtidsröster från andra leverantörer väljs bort, eftersom vännen då inte är Claude. Om Anthropic erbjuder ett eget röst-API är det förstahandsvalet.
 
-Ordning: diktering via tangentbordet fungerar från etapp 1, uppläsning efter etapp 1, fullt röstsamtal i en egen etapp när texten känns rätt.
+Ordning: diktering med mikrofonknapp i appen (webbläsarens taligenkänning, med tangentbordets mikrofon som reserv) från etapp 1a, uppläsning efter etapp 1, fullt röstsamtal i en egen etapp när texten känns rätt.
 
 ## 11. Användarens idéer
 
