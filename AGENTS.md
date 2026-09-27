@@ -6,8 +6,11 @@ Instruktioner för kodagenter (Codex, Claude Code) som arbetar i det här repot.
 
 Designfriend är en webbapp där en privatperson får hjälp att inreda sitt hem av en **kunnig vän**: en rådgivare som ser rummet, lär känna användarens smak, resonerar, rekommenderar och minns samtalet över veckor. Tjänsten ska kännas som en vän, inte som en säljare, en lärare eller ett formulär.
 
+**Börja varje session med `plan.md`**: där står läget och nästa steg.
+
 Läs innan du börjar:
 
+- `plan.md` – status, nästa steg och etapper. Uppdatera den när läget ändras.
 - `docs/design.md` – hela designen. Det som står där gäller.
 - `prompts/radgivaren.md` – rådgivarens systemprompt. Rådgivarens beteende styrs härifrån, inte av logik i koden.
 - `docs/samtal-exempel.md` – förebild för tonen.
@@ -63,4 +66,4 @@ Läs innan du börjar:
 
 ## Status
 
-Etapp 1a: samtalet i webbappen. Inloggning med e-post och lösenord, chatt med strömmade svar, foton av rummet och moodboard, projektminne och Var vi är, radering av konto. Idéskisser, markering av föremål, smakminne och katalog kommer i senare etapper.
+Se `plan.md`.
