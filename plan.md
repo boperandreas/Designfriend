@@ -18,10 +18,11 @@ Senast uppdaterad: 2026-09-27
 
 1. **Svarstiden är mätt (2026-09-27, röktestet).** Effort high: första ordet efter 22,7 s, 9,2 s och 6,4 s. Effort low: 4,6 s, 1,9 s och 4,9 s, svar på cirka 150 tokens i stället för 1 668. Kvar är variation i Anthropics svarstid (1,5 till 4,7 s till första byte) och 0,2 till 0,6 s i databasen. Kör röktestet efter varje ändring som kan påverka tiden.
 2. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.
-3. **Prompt v0.2.** Justera `prompts/radgivaren.md` efter reaktionerna. Granska mot `evals/kriterier.md` och testfall 001 innan sammanslagning.
+3. **Prompt 0.1.2 är skriven** efter första kvällen: kortare första svar, ärligt besked om att foton inte kan ändras än, inga bildnummer. Kör röktestet och testfall 002 efter sammanslagning.
+   **Prompt v0.2.** Justera `prompts/radgivaren.md` efter reaktionerna. Granska mot `evals/kriterier.md` och testfall 001 innan sammanslagning.
 4. **Tak per användare och dag.** Spärr i `chat`-funktionen mot för många anrop, så att en loop eller ett fel inte tömmer saldot. Designen kräver det från start och det saknas i 1a.
 5. **Automatisk testsvit.** Skript som spelar upp `evals/fall/` mot prompten via API:et och låter en separat bedömarmodell gå igenom svaren mot kriterierna. Körs i CI när prompten ändras.
-6. **Bildtestet i etapp 0.** Tio rum, fem moodboards, tre bildmodeller (gpt-image-2, Nano Banana 2, FLUX.2 pro edit), tre rum med soffan behållen och bara mattan bytt. Färgtrohet väger tyngst. Resultatet väljer bildmodell och läggs i `docs/beslut.md`.
+6. **Bildtestet i etapp 0, och sedan etapp 1b.** Testanvändaren bad redan första kvällen om att få möbler borttagna ur fotot. Det talar för att ta etapp 1b (Ta bort, Töm rummet) direkt efter taket per dag. Tio rum, fem moodboards, tre bildmodeller (gpt-image-2, Nano Banana 2, FLUX.2 pro edit), tre rum med soffan behållen och bara mattan bytt. Färgtrohet väger tyngst. Resultatet väljer bildmodell och läggs i `docs/beslut.md`.
 
 ## Etapper
 

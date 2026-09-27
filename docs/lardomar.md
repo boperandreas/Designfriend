@@ -142,3 +142,8 @@ Format:
 **Kontroll:** Via connectorn, bara antal, tider och filstorlekar. Varje konto har eget rum, eget minne och egna bilder. Inga bilder eller minnen hör till fel konto. Dubbletterna hade identisk filstorlek.
 **Åtgärd:** Oskickade bilder visas igen i skrivfältet när rummet öppnas. Samma foto två gånger i ett rum stoppas med en kontrollsumma (`bild.hash`).
 **Regel:** Det användaren har sparat ska synas i appen. Visar gränssnittet mindre än rådgivaren ser, blir svaren obegripliga.
+### 2026-09-27 · Prompten lovade bilder som appen inte kan göra
+**Hände:** Testanvändaren bad vännen ta bort en fåtölj och en pall ur fotot och väntade sig en bild. Hon fick en lång textbeskrivning.
+**Orsak:** Prompten från etapp 0 sa "säg att den i appen kommer som en bild". I appen finns ingen bildredigering än, så beskedet blev otydligt.
+**Åtgärd:** Prompt 0.1.2: säg i första meningen att fotot inte kan ändras än, beskriv kort, lova ingen tidpunkt. Testfall 002.
+**Regel:** När appen byter miljö eller funktioner, läs prompten efter löften om sådant som inte finns.
