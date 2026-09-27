@@ -1,9 +1,10 @@
 // Edge function: deletes the signed-in user's account and all their data.
-// Photos in storage are removed first; deleting the auth user then cascades
+// Photos in storage and in Anthropic's Files API are removed first; deleting the auth user then cascades
 // to every table (projekt, bild, meddelande, projektminne).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
+import { deleteFile } from "../_shared/anthropic.ts";
 
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -23,11 +24,19 @@ Deno.serve(async (req) => {
   if (error || !data.user) return json(401, { error: "Du behöver logga in." });
   const uid = data.user.id;
 
+  // Remove the user's photos from Anthropic's Files API.
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  const { data: filer } = await admin.from("bild").select("anthropic_file_id").eq("user_id", uid)
+    .not("anthropic_file_id", "is", null);
+  if (apiKey) {
+    await Promise.all((filer ?? []).map((f) => deleteFile(f.anthropic_file_id as string, apiKey)));
+  }
+
   // Remove every photo under the user's folder (uid/projekt/fil.jpg).
   const { data: mappar } = await admin.storage.from("bilder").list(uid, { limit: 1000 });
   for (const mapp of mappar ?? []) {
-    const { data: filer } = await admin.storage.from("bilder").list(`${uid}/${mapp.name}`, { limit: 1000 });
-    const sokvagar = (filer ?? []).map((f) => `${uid}/${mapp.name}/${f.name}`);
+    const { data: objekt } = await admin.storage.from("bilder").list(`${uid}/${mapp.name}`, { limit: 1000 });
+    const sokvagar = (objekt ?? []).map((f) => `${uid}/${mapp.name}/${f.name}`);
     if (sokvagar.length) await admin.storage.from("bilder").remove(sokvagar);
   }
 

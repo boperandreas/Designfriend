@@ -329,7 +329,7 @@ Tak per användare och dag, och utgiftstak i API-kontona. Vercel och Supabase ha
 - **Möblerna får inte plats:** välj produkter med verkliga mått först, bilden efteråt.
 - **Bilden och listan stämmer inte:** skicka produktbilder som referens, visa listan bredvid.
 - **Rummet ändrar form:** bevara struktur, låt användaren generera om.
-- **Juridik:** lagra i EU, integritetspolicy, radering enligt GDPR, platsdata bort ur foton, märk genererade bilder som AI-illustrationer.
+- **Juridik:** lagra i EU, integritetspolicy, foton som skickas till Claude lagras i Anthropics Files API och raderas med kontot, radering enligt GDPR, platsdata bort ur foton, märk genererade bilder som AI-illustrationer.
 
 ## 16. Testsvit
 

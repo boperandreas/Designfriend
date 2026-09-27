@@ -30,11 +30,12 @@ Läs innan du börjar:
 5. **Integritet:**
    - Ta bort platsdata (EXIF/GPS) ur foton i klienten innan uppladdning.
    - Skala ner foton till cirka 2000 px på längsta sidan innan uppladdning.
-   - Radering av konto raderar all användardata, även foton och minne.
+   - Radering av konto raderar all användardata, även foton och minne, och fotona i Anthropics Files API.
    - Lagra aldrig kön, hälsa eller omdömen om personen. Lärdomar om arbetssätt beskriver vad som hjälper, aldrig vem personen är.
 6. **Ingen inloggningslänk.** En webbapp på hemskärmen i iPhone har egen lagring, skild från Safari, så en länk i ett mejl loggar in fel ställe. I etapp 1a loggar man in med e-post och lösenord som utvecklaren sätter. Engångskod via mejl kräver egen SMTP och kan komma senare. Nya användare kan inte registrera sig själva.
 7. **Bilder i ett förslag**: det användaren markerat som Behåll ska vara pixelidentiskt. Kopiera tillbaka originalets pixlar utanför masken efter generering.
 8. **Allt användartext i gränssnittet är på svenska.**
+9. **Promptcachen styr svarstiden.** Systemprompten och fotona ska vara identiska mellan anrop. Lägg aldrig något som ändras (minne, datum, tid sedan förra meddelandet) i systemprompten. Det skickas med det senaste användarmeddelandet. Foton skickas som Files API-id, aldrig som nya signerade adresser.
 
 ## Arbetssätt i repot
 
@@ -49,7 +50,8 @@ Läs innan du börjar:
 - `web/` – webbappen (Vite, React, TypeScript, vite-plugin-pwa). `npm test`, `npm run build`.
 - `supabase/migrations/` – databasen. Varje tabell har RLS och uttryckliga grants.
 - `supabase/functions/chat/` – ett samtalsvarv: strömmat svar från Claude och uppdatering av projektminnet.
-- `supabase/functions/radera-konto/` – raderar konto, foton och all data.
+- `supabase/functions/radera-konto/` – raderar konto, foton (även i Anthropics Files API) och all data.
+- `supabase/functions/_shared/anthropic.ts` – uppladdning och radering i Anthropics Files API.
 - `supabase/functions/_shared/prompt.ts` – genereras från `prompts/radgivaren.md` med `node scripts/sync-prompt.mjs`. Redigera aldrig filen för hand.
 - `.github/workflows/` – CI för tester, och driftsättning av Supabase när `main` ändras.
 - `docs/driftsattning.md` – engångsuppsättning av konton och hemligheter.

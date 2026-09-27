@@ -67,3 +67,18 @@ Sedan skickar du adressen till Susie.
 | "E-postadressen eller lösenordet stämmer inte" | Kontrollera användaren under Authentication → Users, eller sätt ett nytt lösenord där |
 | "Vännen svarar inte just nu" | `ANTHROPIC_API_KEY` saknas eller är fel, eller modellnamnet stämmer inte. Se Edge Functions → chat → Logs |
 | Arbetsflödet i GitHub misslyckas | Någon av hemligheterna i steg 4 saknas |
+
+## Mäta svarstiden
+
+Varje svar skriver en rad i loggen: **Edge Functions → chat → Logs**, sök på `chat_timing`. Fälten:
+
+| Fält | Betyder |
+|---|---|
+| `db_ms` | Tid tills databasen svarat |
+| `files_ms`, `new_files` | Tid för att ladda upp nya foton till Anthropic. Sker bara första gången ett foto används |
+| `claude_headers_ms` | Tid tills Claude börjat svara |
+| `first_token_ms` | Tid tills första ordet skickas till telefonen. Den siffra som känns |
+| `total_ms` | Hela svaret |
+| `cache_read_tokens` | Hur mycket som lästes från cachen. Högt är bra |
+| `cache_write_tokens` | Hur mycket som skrevs till cachen. Högt vid första meddelandet och efter en paus på mer än en timme |
+| `web_searches` | Antal webbsökningar. Varje sökning tar några sekunder |
