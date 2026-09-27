@@ -8,6 +8,7 @@ Webbapp på svenska för privatpersoner, byggd som sidoprojekt.
 
 | Sökväg | Vad |
 |---|---|
+| `plan.md` | Läget och nästa steg |
 | `AGENTS.md` | Instruktioner för kodagenter (Codex, Claude Code) |
 | `docs/design.md` | Tjänstedesignen |
 | `docs/samtal-exempel.md` | Ett påhittat samtal som förebild för tonen |
