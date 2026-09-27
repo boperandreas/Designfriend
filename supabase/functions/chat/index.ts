@@ -4,9 +4,14 @@
 // Authorization: Bearer <user access token>
 //
 // Saves the user's message, calls Claude with the system prompt, the
-// project's photos, the project memory and recent history, streams the reply
+// project's photos, recent history and the project memory, streams the reply
 // back as plain text, saves the reply, and then updates the project memory in
 // the background.
+//
+// Latency and cost depend on the prompt cache. The request is laid out so the
+// start of it is identical from turn to turn: tools, a static system prompt,
+// the photos (as Files API ids), then history. Everything that changes each
+// turn (memory, date) is sent only with the newest user message.
 //
 // Secrets (set in Supabase → Edge Functions → Secrets):
 //   ANTHROPIC_API_KEY  required
@@ -16,19 +21,26 @@
 
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
-import { alternate, buildSystem, type ApiMessage, type Block, type Roll } from "./lib.ts";
+import { ANTHROPIC_API, anthropicHeaders, uploadFile } from "../_shared/anthropic.ts";
+import {
+  alternate, buildContext, buildSystem, CACHE, markHistoryCache,
+  type ApiMessage, type Block, type Roll,
+} from "./lib.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
-const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = Deno.env.get("ANTHROPIC_MODEL") ?? "claude-sonnet-5";
 const MEMORY_MODEL = Deno.env.get("MEMORY_MODEL") ?? "claude-haiku-4-5-20251001";
 const WEB_SEARCH_TOOL = Deno.env.get("WEB_SEARCH_TOOL") ?? "web_search_20250305";
 const HISTORY_LIMIT = 40;
 const IMAGE_LIMIT = 16;
+const SYSTEM = buildSystem();
 
 interface Meddelande { roll: Roll; text: string; bilder: string[]; skapad: string }
-interface Bild { id: string; typ: "rum" | "moodboard"; sokvag: string; favorit: boolean; kommentar: string | null }
+interface Bild {
+  id: string; typ: "rum" | "moodboard"; sokvag: string; favorit: boolean;
+  kommentar: string | null; anthropic_file_id: string | null;
+}
 
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -37,33 +49,43 @@ function json(status: number, body: unknown) {
   });
 }
 
-async function imageBlocks(sb: SupabaseClient, bilder: Bild[]): Promise<Block[]> {
-  if (!bilder.length) return [];
-  const { data, error } = await sb.storage.from("bilder").createSignedUrls(bilder.map((b) => b.sokvag), 3600);
-  if (error || !data) throw new Error(`Kunde inte läsa bilderna: ${error?.message}`);
+/** Make sure every photo has a Files API id; upload the ones that don't. */
+async function ensureFiles(sb: SupabaseClient, bilder: Bild[], apiKey: string): Promise<void> {
+  await Promise.all(bilder.filter((b) => !b.anthropic_file_id).map(async (b) => {
+    try {
+      const { data, error } = await sb.storage.from("bilder").download(b.sokvag);
+      if (error || !data) throw new Error(error?.message ?? "no data");
+      const id = await uploadFile(data, `${b.id}.jpg`, apiKey);
+      b.anthropic_file_id = id;
+      const { error: upd } = await sb.from("bild").update({ anthropic_file_id: id }).eq("id", b.id);
+      if (upd) console.error("could not store file id", upd.message);
+    } catch (e) {
+      console.error("photo upload to Anthropic failed", b.id, e);
+    }
+  }));
+}
+
+function imageBlocks(bilder: Bild[]): Block[] {
+  const med = bilder.filter((b) => b.anthropic_file_id);
+  if (!med.length) return [];
   const blocks: Block[] = [{
     type: "text",
     text: "Bilderna i projektet, numrerade. Rumsfoton visar hur rummet ser ut i dag. Moodboardbilder visar vad användaren gillar.",
   }];
   bilder.forEach((b, i) => {
-    const url = data[i]?.signedUrl;
-    if (!url) return;
+    if (!b.anthropic_file_id) return;
     const etikett = `Bild ${i + 1}: ${b.typ === "rum" ? "rumsfoto" : "moodboard"}${b.favorit ? ", favorit" : ""}${b.kommentar ? `. Användarens kommentar: ${b.kommentar}` : ""}`;
     blocks.push({ type: "text", text: etikett });
-    blocks.push({ type: "image", source: { type: "url", url } });
+    blocks.push({ type: "image", source: { type: "file", file_id: b.anthropic_file_id } });
   });
-  blocks[blocks.length - 1].cache_control = { type: "ephemeral" };
+  blocks[blocks.length - 1].cache_control = CACHE;
   return blocks;
 }
 
 async function callClaude(body: Block, apiKey: string): Promise<Response> {
-  return await fetch(ANTHROPIC_URL, {
+  return await fetch(`${ANTHROPIC_API}/messages`, {
     method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
+    headers: { ...anthropicHeaders(apiKey), "content-type": "application/json" },
     body: JSON.stringify(body),
   });
 }
@@ -119,6 +141,10 @@ ${transcript}`;
 }
 
 Deno.serve(async (req) => {
+  const t0 = performance.now();
+  const ms = () => Math.round(performance.now() - t0);
+  const timing: Record<string, unknown> = {};
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json(405, { error: "Bara POST stöds." });
 
@@ -127,15 +153,6 @@ Deno.serve(async (req) => {
 
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return json(401, { error: "Du behöver logga in." });
-
-  // The public key: the legacy anon key if present, otherwise the publishable
-  // key the web app sends in the apikey header.
-  const publicKey = Deno.env.get("SUPABASE_ANON_KEY") ?? req.headers.get("apikey") ?? "";
-  const sb = createClient(Deno.env.get("SUPABASE_URL")!, publicKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data: userData, error: userError } = await sb.auth.getUser(authHeader.replace(/^Bearer /i, ""));
-  if (userError || !userData.user) return json(401, { error: "Inloggningen har gått ut. Logga in igen." });
 
   let payload: { projekt_id?: string; text?: string; bild_ids?: string[] };
   try {
@@ -148,58 +165,66 @@ Deno.serve(async (req) => {
   const text = (payload.text ?? "").trim();
   if (!projektId || (!text && !bildIds.length)) return json(400, { error: "Meddelandet är tomt." });
 
-  // Owner check happens through RLS: a foreign project returns no row.
-  const { data: projekt } = await sb.from("projekt").select("id").eq("id", projektId).maybeSingle();
-  if (!projekt) return json(404, { error: "Projektet finns inte." });
+  // The public key: the legacy anon key if present, otherwise the publishable
+  // key the web app sends in the apikey header.
+  const publicKey = Deno.env.get("SUPABASE_ANON_KEY") ?? req.headers.get("apikey") ?? "";
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, publicKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
 
-  const [{ data: historik }, { data: bilder }, { data: minne }] = await Promise.all([
+  // Everything we need, in parallel. RLS limits every query to the caller.
+  const [userRes, projektRes, historikRes, bilderRes, minneRes] = await Promise.all([
+    sb.auth.getUser(authHeader.replace(/^Bearer /i, "")),
+    sb.from("projekt").select("id").eq("id", projektId).maybeSingle(),
     sb.from("meddelande").select("roll,text,bilder,skapad").eq("projekt_id", projektId)
       .order("skapad", { ascending: false }).limit(HISTORY_LIMIT),
-    sb.from("bild").select("id,typ,sokvag,favorit,kommentar").eq("projekt_id", projektId)
+    sb.from("bild").select("id,typ,sokvag,favorit,kommentar,anthropic_file_id").eq("projekt_id", projektId)
       .order("skapad", { ascending: true }).limit(IMAGE_LIMIT),
     sb.from("projektminne").select("innehall").eq("projekt_id", projektId).maybeSingle(),
   ]);
+  timing.db_ms = ms();
+  if (userRes.error || !userRes.data.user) return json(401, { error: "Inloggningen har gått ut. Logga in igen." });
+  if (!projektRes.data) return json(404, { error: "Projektet finns inte." });
 
-  const tidigare = ((historik ?? []) as Meddelande[]).reverse();
-  const bildLista = (bilder ?? []) as Bild[];
+  const tidigare = ((historikRes.data ?? []) as Meddelande[]).reverse();
+  const bildLista = (bilderRes.data ?? []) as Bild[];
+  const minne = minneRes.data?.innehall;
   const nummer = new Map(bildLista.map((b, i) => [b.id, i + 1]));
   const bifogat = bildIds.map((id) => nummer.get(id)).filter(Boolean);
   const userText = [text || "(skickade bilder)", bifogat.length ? `[Bifogade nu: bild ${bifogat.join(", ")}]` : ""]
     .filter(Boolean).join("\n");
 
-  const { error: insertError } = await sb.from("meddelande").insert({
+  // Save the user's message while the rest runs.
+  const sparaFraga = sb.from("meddelande").insert({
     projekt_id: projektId, roll: "user", text: text || "(bilder)", bilder: bildIds,
   });
-  if (insertError) return json(500, { error: "Kunde inte spara meddelandet." });
+
+  const nyaFiler = bildLista.filter((b) => !b.anthropic_file_id).length;
+  await ensureFiles(sb, bildLista, apiKey);
+  timing.files_ms = ms();
+  timing.new_files = nyaFiler;
+  timing.images = bildLista.length;
 
   const lastAt = tidigare.length ? tidigare[tidigare.length - 1].skapad : null;
-  const system = buildSystem(minne?.innehall, lastAt);
-
-  let bildBlock: Block[] = [];
-  try {
-    bildBlock = await imageBlocks(sb, bildLista);
-  } catch (e) {
-    console.error(e);
-  }
-
   const historyMsgs: ApiMessage[] = tidigare.map((m) => ({
     role: m.roll,
     content: m.roll === "user" && m.bilder?.length
       ? `${m.text}\n[Bifogade: bild ${m.bilder.map((id) => nummer.get(id)).filter(Boolean).join(", ")}]`
       : m.text,
   }));
-  historyMsgs.push({ role: "user", content: userText });
+  historyMsgs.push({ role: "user", content: `${buildContext(minne, lastAt)}\n\n${userText}` });
 
+  const bildBlock = imageBlocks(bildLista);
   const prefix: ApiMessage[] = bildBlock.length
     ? [{ role: "user", content: bildBlock }, { role: "assistant", content: "Jag har sett bilderna." }]
     : [];
-  const messages = [...prefix, ...alternate(historyMsgs)];
+  const messages = markHistoryCache([...prefix, ...alternate(historyMsgs)]);
 
   const baseBody: Block = {
     model: MODEL,
     max_tokens: 2000,
     stream: true,
-    system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: SYSTEM, cache_control: CACHE }],
     messages,
   };
   const tools = WEB_SEARCH_TOOL === "off" ? undefined : [{
@@ -212,12 +237,17 @@ Deno.serve(async (req) => {
   let res = await callClaude(tools ? { ...baseBody, tools } : baseBody, apiKey);
   if (!res.ok && res.status === 400 && tools) {
     console.error("claude 400 with web search, retrying without", await res.text());
+    timing.retried_without_tools = true;
     res = await callClaude(baseBody, apiKey);
   }
+  timing.claude_headers_ms = ms();
   if (!res.ok || !res.body) {
     console.error("claude error", res.status, await res.text().catch(() => ""));
     return json(502, { error: "Vännen svarar inte just nu. Försök igen om en stund." });
   }
+
+  const { error: insertError } = await sparaFraga;
+  if (insertError) console.error("could not save user message", insertError.message);
 
   const upstream = res.body;
   const encoder = new TextEncoder();
@@ -244,13 +274,23 @@ Deno.serve(async (req) => {
             } catch {
               continue;
             }
-            if (data.type === "content_block_delta" && data.delta?.type === "text_delta") {
+            if (data.type === "message_start") {
+              const u = data.message?.usage ?? {};
+              timing.input_tokens = u.input_tokens;
+              timing.cache_read_tokens = u.cache_read_input_tokens;
+              timing.cache_write_tokens = u.cache_creation_input_tokens;
+            } else if (data.type === "content_block_delta" && data.delta?.type === "text_delta") {
+              if (timing.first_token_ms === undefined) timing.first_token_ms = ms();
               svar += data.delta.text;
               controller.enqueue(encoder.encode(data.delta.text));
+            } else if (data.type === "content_block_start" && data.content_block?.type === "server_tool_use") {
+              timing.web_searches = ((timing.web_searches as number) ?? 0) + 1;
             } else if (data.type === "content_block_start" && data.content_block?.type === "text" && svar && !svar.endsWith("\n")) {
               // A new text block after a web search: keep the text readable.
               svar += " ";
               controller.enqueue(encoder.encode(" "));
+            } else if (data.type === "message_delta") {
+              timing.output_tokens = data.usage?.output_tokens;
             } else if (data.type === "error") {
               console.error("stream error", data);
             }
@@ -260,13 +300,16 @@ Deno.serve(async (req) => {
         console.error("stream failed", e);
       }
 
+      timing.total_ms = ms();
+      console.log(JSON.stringify({ event: "chat_timing", model: MODEL, ...timing }));
+
       const slutsvar = svar.trim();
       if (slutsvar) {
         const { error } = await sb.from("meddelande").insert({ projekt_id: projektId, roll: "assistant", text: slutsvar });
         if (error) console.error("could not save reply", error.message);
         const senaste = [...tidigare.slice(-8).map((m) => ({ roll: m.roll, text: m.text })),
           { roll: "user" as Roll, text: userText }, { roll: "assistant" as Roll, text: slutsvar }];
-        EdgeRuntime.waitUntil(updateMemory(sb, projektId, minne?.innehall, senaste, apiKey));
+        EdgeRuntime.waitUntil(updateMemory(sb, projektId, minne, senaste, apiKey));
       }
       controller.close();
     },
