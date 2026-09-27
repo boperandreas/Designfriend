@@ -1,0 +1,29 @@
+name: Röktest
+
+# Sends a few real messages to the live app as a dedicated test user.
+# Started by the agent (push to the branch "rooktest") or by hand (Run workflow).
+# Needs repository secrets TEST_EMAIL and TEST_PASSWORD for a test user in Supabase.
+
+on:
+  workflow_dispatch:
+    inputs:
+      messages:
+        description: Antal meddelanden
+        default: "3"
+  push:
+    branches: [rooktest]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Send messages
+        env:
+          TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          MESSAGES: ${{ github.event.inputs.messages || '3' }}
+        run: node scripts/rooktest.mjs

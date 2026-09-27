@@ -102,6 +102,12 @@ Format:
 **Åtgärd:** Supabase-connectorn ansluten i claude.ai. Agenten läser loggar, funktioner och migreringar själv.
 **Regel:** Be aldrig utvecklaren kopiera något agenten kan läsa via en connector. Leta efter en connector först.
 
+### 2026-09-27 · Agenten kunde inte testa appen själv
+**Hände:** Utvecklaren fick skicka testmeddelanden för att agenten skulle kunna mäta.
+**Orsak:** Agentens arbetsyta når inte Supabase, och connectorn kan inte anropa funktioner som inloggad användare.
+**Åtgärd:** Arbetsflödet Röktest i GitHub Actions, med en egen testanvändare och ett påhittat foto. Agenten startar det med en push till grenen `rooktest`.
+**Regel:** Allt agenten behöver för att verifiera sitt arbete ska den kunna starta själv.
+
 ### 2026-09-27 · Commits efter sammanslagning följde inte med
 **Hände:** Lärdomar, plan och dagsavslut lades på grenen `snabbare-svar` efter att pull requesten redan slagits ihop, och hamnade aldrig i `main`.
 **Åtgärd:** Togs in via grenen `supabase-koppling`.
