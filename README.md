@@ -13,6 +13,9 @@ Webbapp på svenska för privatpersoner, byggd som sidoprojekt.
 | `docs/samtal-exempel.md` | Ett påhittat samtal som förebild för tonen |
 | `prompts/radgivaren.md` | Rådgivarens systemprompt |
 | `evals/` | Testsvit för rådgivarens beteende |
+| `web/` | Webbappen |
+| `supabase/` | Databas och serverfunktioner |
+| `docs/driftsattning.md` | Så blir appen tillgänglig |
 
 ## Kom igång med etapp 0
 

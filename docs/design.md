@@ -306,7 +306,7 @@ flowchart LR
 ## 13. Webbappen
 
 - **Hemskärmen:** iPhone föreslår det inte själv. Första gången visas en kort guide.
-- **Inloggning med kod:** en webbapp på hemskärmen har egen lagring skild från Safari, så en inloggningslänk fungerar dåligt. Engångskod. Bara inbjudna adresser.
+- **Inloggning utan länk:** en webbapp på hemskärmen har egen lagring skild från Safari, så en inloggningslänk fungerar dåligt. I etapp 1a e-post och lösenord som utvecklaren sätter. Engångskod via mejl när egen SMTP finns. Ingen kan registrera sig själv.
 - **Foton:** kamera eller kamerarulle, nedskalning till cirka 2000 px och borttagen platsdata i telefonen.
 - **Strömmat och bakgrund:** text strömmas, skisser görs som bakgrundsjobb och dyker upp när de är klara.
 - **Utan uppkoppling:** Var vi är och planen går att läsa.
@@ -338,7 +338,7 @@ Se `evals/kriterier.md`.
 ## 17. Byggplan
 
 - **Etapp 0 · en helg.** Samtalet: systemprompten testas i ett Claude-projekt tills tonen känns rätt. Bilderna: tio rum, fem moodboards, tre bildmodeller, tre rum med soffan behållen och bara mattan bytt. *Klart när* användaren tycker att vännen låter som en vän, bildmodell är vald och det behållna är oförändrat.
-- **Etapp 1 · 2–3 veckor.** Utforska-läget i webbappen: hemskärm, engångskod, foton, steg 1–5, markering med mask och återställning, moodboard, chatten med verktyg, rådfrågor och åtgärder. *Klart när* användaren kan lägga appen på hemskärmen, fota rummet och få en rekommenderad idéskiss i ett samtal som fortsätter där det slutade.
+- **Etapp 1 · 2–3 veckor.** Utforska-läget i webbappen: hemskärm, inloggning, foton, steg 1–5, markering med mask och återställning, moodboard, chatten med verktyg, rådfrågor och åtgärder. *Klart när* användaren kan lägga appen på hemskärmen, fota rummet och få en rekommenderad idéskiss i ett samtal som fortsätter där det slutade.
 - **Etapp 2 · 2 veckor.** Minnet: projektminne, sökning i loggen, Var vi är, smakminne, Min smak, arbetssättets signaler. *Klart när* ett samtal kan återupptas efter tre dagar utan att något sägs två gånger.
 - **Etapp 3 · 2–3 veckor.** Förverkliga-läget: katalog, plan, budget, Hitta närmaste, kostnadstak. *Klart när* en skiss blir en köpbar lista som håller budget.
 - **Etapp R · 2–3 veckor.** Röstsamtal. *Klart när* fördröjningen är mätt och samtalet känns naturligt.

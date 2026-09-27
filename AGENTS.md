@@ -32,7 +32,7 @@ Läs innan du börjar:
    - Skala ner foton till cirka 2000 px på längsta sidan innan uppladdning.
    - Radering av konto raderar all användardata, även foton och minne.
    - Lagra aldrig kön, hälsa eller omdömen om personen. Lärdomar om arbetssätt beskriver vad som hjälper, aldrig vem personen är.
-6. **Inloggning med engångskod**, inte inloggningslänk. En webbapp på hemskärmen i iPhone har egen lagring, skild från Safari. Bara inbjudna e-postadresser får logga in.
+6. **Ingen inloggningslänk.** En webbapp på hemskärmen i iPhone har egen lagring, skild från Safari, så en länk i ett mejl loggar in fel ställe. I etapp 1a loggar man in med e-post och lösenord som utvecklaren sätter. Engångskod via mejl kräver egen SMTP och kan komma senare. Nya användare kan inte registrera sig själva.
 7. **Bilder i ett förslag**: det användaren markerat som Behåll ska vara pixelidentiskt. Kopiera tillbaka originalets pixlar utanför masken efter generering.
 8. **Allt användartext i gränssnittet är på svenska.**
 
@@ -44,6 +44,16 @@ Läs innan du börjar:
 - Skriv tester för logik (masker, bildbehandling, minnesuppdatering). Rådgivarens beteende testas med `evals/`.
 - Lägg aldrig in verkliga personers foton, namn eller samtal i repot. Testdata ska vara påhittad eller avidentifierad.
 
+## Struktur
+
+- `web/` – webbappen (Vite, React, TypeScript, vite-plugin-pwa). `npm test`, `npm run build`.
+- `supabase/migrations/` – databasen. Varje tabell har RLS och uttryckliga grants.
+- `supabase/functions/chat/` – ett samtalsvarv: strömmat svar från Claude och uppdatering av projektminnet.
+- `supabase/functions/radera-konto/` – raderar konto, foton och all data.
+- `supabase/functions/_shared/prompt.ts` – genereras från `prompts/radgivaren.md` med `node scripts/sync-prompt.mjs`. Redigera aldrig filen för hand.
+- `.github/workflows/` – CI för tester, och driftsättning av Supabase när `main` ändras.
+- `docs/driftsattning.md` – engångsuppsättning av konton och hemligheter.
+
 ## Status
 
-Etapp 0: systemprompten finns och testas i ett Claude-projekt. Ingen appkod ännu.
+Etapp 1a: samtalet i webbappen. Inloggning med e-post och lösenord, chatt med strömmade svar, foton av rummet och moodboard, projektminne och Var vi är, radering av konto. Idéskisser, markering av föremål, smakminne och katalog kommer i senare etapper.
