@@ -68,6 +68,15 @@ Sedan skickar du adressen till Susie.
 | "Vännen svarar inte just nu" | `ANTHROPIC_API_KEY` saknas eller är fel, eller modellnamnet stämmer inte. Se Edge Functions → chat → Logs |
 | Arbetsflödet i GitHub misslyckas | Någon av hemligheterna i steg 4 saknas |
 
+## Testanvändare för röktestet
+
+Agenten kan testa appen i drift själv med arbetsflödet **Röktest**. Det behöver en egen testanvändare, aldrig en verklig person:
+
+1. **Supabase → Authentication → Users → Add user → Create new user:** till exempel `rooktest@` följt av din egen domän eller en adress du äger, ett långt lösenord, **Auto Confirm User**.
+2. **GitHub → Settings → Secrets and variables → Actions:** lägg till `TEST_EMAIL` och `TEST_PASSWORD` med samma värden.
+
+Testanvändaren får ett eget rum, Röktest, med ett påhittat foto.
+
 ## Mäta svarstiden
 
 Varje svar skriver en rad i loggen: **Edge Functions → chat → Logs**, sök på `chat_timing`. Fälten:

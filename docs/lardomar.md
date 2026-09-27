@@ -43,6 +43,18 @@ Format:
 **Åtgärd:** Statisk systemprompt. Minne och tid skickas med senaste användarmeddelandet. Foton laddas upp en gång till Files API och refereras med id. Cache med en timmes livslängd. Loggraden `chat_timing` visar cacheträffar och tider.
 **Regel:** Början av varje anrop (tools, system, foton, historik) ska vara identisk mellan turer. Kontrollera `cache_read_tokens` i loggen efter ändringar i anropet. Regel 9 i `AGENTS.md`.
 
+### 2026-09-27 · Konfliktmarkeringar checkades in
+**Hände:** En sammanslagning av `main` in i en gren gav en konflikt i `plan.md`, men nästa steg i samma kommando checkade in allt med `git add -A`, inklusive konfliktmarkeringarna.
+**Orsak:** Kommandon kedjades utan att kontrollera att sammanslagningen lyckades.
+**Åtgärd:** Konflikten löstes i en ny commit.
+**Regel:** Kör aldrig `git add -A` efter en sammanslagning utan att först kontrollera `git status` och söka efter `<<<<<<<`. Kedja inte merge och commit i samma kommando.
+
+### 2026-09-27 · Röktestet ställde samma frågor i samma samtal
+**Hände:** Andra körningen fortsatte samtalet från den första. Vännen svarade "samma svar som sist" och lät irriterad.
+**Orsak:** Testrummet återanvändes med historik och projektminne.
+**Åtgärd:** Röktestet tömmer samtal och projektminne i testrummet innan varje körning. Fotot behålls.
+**Regel:** Ett test som upprepas ska börja från samma läge varje gång.
+
 ### 2026-09-27 · Sonnet 5 tänker länge innan första ordet
 **Hände:** Röktestet visade att cachen fungerade, men det tog 6 till 23 sekunder till första ordet och 7 till 18 sekunder mellan att Claude började och att text kom. Första svaret var 1 668 tokens trots att prompten ber om korta svar.
 **Orsak:** Claude Sonnet 5 har adaptivt tänkande påslaget som standard med effort `high`. Tänkandet sker före texten och räknas som output.
@@ -107,6 +119,12 @@ Format:
 **Orsak:** Agentens arbetsyta når inte Supabase direkt.
 **Åtgärd:** Supabase-connectorn ansluten i claude.ai. Agenten läser loggar, funktioner och migreringar själv.
 **Regel:** Be aldrig utvecklaren kopiera något agenten kan läsa via en connector. Leta efter en connector först.
+
+### 2026-09-27 · Agenten kunde inte testa appen själv
+**Hände:** Utvecklaren fick skicka testmeddelanden för att agenten skulle kunna mäta.
+**Orsak:** Agentens arbetsyta når inte Supabase, och connectorn kan inte anropa funktioner som inloggad användare.
+**Åtgärd:** Arbetsflödet Röktest i GitHub Actions, med en egen testanvändare och ett påhittat foto. Agenten startar det med en push till grenen `rooktest`.
+**Regel:** Allt agenten behöver för att verifiera sitt arbete ska den kunna starta själv.
 
 ### 2026-09-27 · Commits efter sammanslagning följde inte med
 **Hände:** Lärdomar, plan och dagsavslut lades på grenen `snabbare-svar` efter att pull requesten redan slagits ihop, och hamnade aldrig i `main`.
