@@ -93,7 +93,12 @@ button:disabled { opacity: .5; cursor: default; }
 .bilagor figcaption { font-size: .7rem; color: var(--muted); }
 .attach { display: flex; gap: 8px; flex-wrap: wrap; }
 .attach button { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: .88rem; }
-.input-row { display: flex; gap: 8px; align-items: flex-end; }
+.input-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.mic { flex-shrink: 0; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.mic.lyssnar { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); animation: puls 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .mic.lyssnar { animation: none; } }
+.dikt-tips { order: 3; width: 100%; font-size: .85rem; color: var(--muted); }
 .input-row textarea { flex: 1; min-width: 0; resize: none; field-sizing: content; max-height: 40vh; padding: 10px 12px;
   border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 16px; }
 

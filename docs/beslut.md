@@ -52,3 +52,8 @@ Format:
 ### 2026-09-27 · Supabase-connectorn för att läsa, repot för att ändra
 **Varför:** Agenten ska kunna läsa loggar och status själv utan att utvecklaren kopierar. Ändringar ska fortsatt granskas i pull requests.
 **Följder:** Connectorn ger bred åtkomst. Agenten läser inte användarnas samtal, foton eller minne utan uttrycklig begäran.
+
+### 2026-09-27 · Diktering med webbläsarens taligenkänning
+**Varför:** Användaren ska kunna prata in sina meddelanden. Webbläsarens inbyggda taligenkänning (Web Speech API) har svenska, kostar inget och kräver inget nytt konto. Texten hamnar i fältet och kan rättas innan den skickas.
+**Följder:** Talet tolkas av webbläsarens leverantör (Apple i Safari, Google i Chrome), inte av oss. Inget ljud lagras i appen. Stödet varierar mellan webbläsare; där det saknas visar knappen hur man dikterar med tangentbordets mikrofon.
+**Alternativ som valdes bort:** Egen inspelning och tal till text via separat tjänst (KB-Whisper, ElevenLabs). Kan komma med röstläget i etapp R.
