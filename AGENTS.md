@@ -6,12 +6,17 @@ Instruktioner för kodagenter (Codex, Claude Code) som arbetar i det här repot.
 
 Designfriend är en webbapp där en privatperson får hjälp att inreda sitt hem av en **kunnig vän**: en rådgivare som ser rummet, lär känna användarens smak, resonerar, rekommenderar och minns samtalet över veckor. Tjänsten ska kännas som en vän, inte som en säljare, en lärare eller ett formulär.
 
+**Börja varje session med `plan.md`**: där står läget och nästa steg.
+
 Läs innan du börjar:
 
+- `plan.md` – status, nästa steg och etapper. Uppdatera den när läget ändras.
 - `docs/design.md` – hela designen. Det som står där gäller.
 - `prompts/radgivaren.md` – rådgivarens systemprompt. Rådgivarens beteende styrs härifrån, inte av logik i koden.
 - `docs/samtal-exempel.md` – förebild för tonen.
 - `evals/` – testsviten.
+- `docs/lardomar.md` – det vi lärt oss av misstag. Upprepa dem inte.
+- `docs/beslut.md` – beslut och skälen bakom dem. Ändra inte ett beslut utan att lägga till ett nytt som förklarar varför.
 
 ## Stack
 
@@ -39,6 +44,30 @@ Läs innan du börjar:
 
 ## Arbetssätt i repot
 
+- **Lär av misstag.** När något går fel, tar oväntat lång tid eller överraskar: lägg till en post i `docs/lardomar.md` i samma pull request. När samma lärdom återkommer, gör den till en regel här.
+- **Dokumentera beslut.** Nya vägval läggs i `docs/beslut.md` med skäl och bortvalda alternativ.
+
+## Supabase via connector
+
+Agenten har åtkomst till Supabase-projektet via Claude-connectorn (project id `ocdmhgjmbtbfxyifjxcd`).
+
+- **Läs själv, be inte utvecklaren kopiera.** Loggar (`query_logs`, sök på `chat_timing`), funktioner, migreringar och rådgivare läses direkt.
+- **Läs aldrig användarnas samtal, foton eller projektminne** utan att utvecklaren uttryckligen ber om det. Tabellerna `meddelande`, `bild` och `projektminne` innehåller verkliga personers data. Räkna rader och läs tekniska fält vid behov, inte innehåll.
+- **Ändra inget via connectorn.** Migreringar och funktioner går via repot, pull request och GitHub Actions, så att utvecklaren granskar dem först. Undantag bara om utvecklaren ber om det.
+
+## Dagsavslut
+
+När utvecklaren säger att hen är klar för dagen ("klar för dagen", "vi slutar här", "godnatt" eller liknande), gör detta innan sessionen avslutas:
+
+1. **Gå igenom dagen:** samtalet, commits sedan förra dagsavslutet (`git log`), öppna grenar och pull requests, loggrader eller skärmbilder som delats.
+2. **Uppdatera `plan.md`:** datum, Läget just nu, bocka av det som blivit klart, skriv om Nästa steg i ordning, flytta nya luckor till Kända luckor.
+3. **Uppdatera `docs/lardomar.md`:** en post för varje misstag, omväg eller överraskning under dagen som inte redan finns där. Återkommande lärdom blir regel i `AGENTS.md`.
+4. **Uppdatera `docs/beslut.md`:** beslut som fattats under dagen, med skäl.
+5. **Spara:** finns en öppen gren för dagens arbete, lägg ändringarna där. Annars en ny gren `dagsavslut-ÅÅÅÅ-MM-DD` och en pull request. Skriv ingenting direkt på `main`.
+6. **Sammanfatta för utvecklaren** i några rader: vad som blev klart, vad som väntar på hen (till exempel en pull request att slå ihop) och vad som är första steget nästa gång.
+
+Inga verkliga personers namn, foton eller samtal i filerna. Skriv "testanvändaren" eller "utvecklaren".
+
 - Små pull requests, en sak i taget. Beskriv i PR:en vad som ändrats och hur det testats.
 - Etapperna i `docs/design.md` styr ordningen. Bygg inte funktioner från senare etapper utan att det är bestämt.
 - Kod och kommentarer på engelska, gränssnitt och prompter på svenska.
@@ -58,4 +87,4 @@ Läs innan du börjar:
 
 ## Status
 
-Etapp 1a: samtalet i webbappen. Inloggning med e-post och lösenord, chatt med strömmade svar, foton av rummet och moodboard, projektminne och Var vi är, radering av konto. Idéskisser, markering av föremål, smakminne och katalog kommer i senare etapper.
+Se `plan.md`.
