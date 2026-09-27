@@ -29,6 +29,24 @@ Appen loggar in med e-post och lösenord. Inga mejl skickas, så mejlmallarna be
 
 Valfritt: `ANTHROPIC_MODEL` om du vill byta modell (standard är `claude-sonnet-5`), och `WEB_SEARCH_TOOL` = `off` om vännen inte ska kunna söka på webben efter priser.
 
+## 3b. fal.ai: idéskisser
+
+Skisserna görs av en bildmodell och en segmenteringsmodell (SAM 3) hos fal.ai. En nyckel räcker för alla modellerna.
+
+1. Gå till fal.ai och logga in, till exempel med GitHub.
+2. **Billing:** köp ett litet saldo, till exempel 10 dollar, utan automatisk påfyllning. En skiss kostar ungefär 1 krona.
+3. **Keys → Add key**, scope **API**. Kopiera nyckeln.
+4. **Supabase → Edge Functions → Secrets → Add new secret:** namn `FAL_KEY`, värde nyckeln.
+
+Utan `FAL_KEY` fungerar appen som förut, och vännen säger att den inte kan ändra i foton.
+
+Valfritt:
+
+| Namn | Värde |
+|---|---|
+| `FAL_MODELL` | bildmodell, standard `fal-ai/nano-banana-2/edit`. Alternativ: `openai/gpt-image-2/edit`, `fal-ai/flux-2-pro/edit` |
+| `SKISS_PER_DYGN` | högsta antal skisser per användare och dygn, standard 20 |
+
 ## 4. GitHub: så att databasen och funktionerna driftsätts automatiskt
 
 I repot på GitHub, **Settings → Secrets and variables → Actions → New repository secret:**
@@ -91,3 +109,6 @@ Varje svar skriver en rad i loggen: **Edge Functions → chat → Logs**, sök p
 | `cache_read_tokens` | Hur mycket som lästes från cachen. Högt är bra |
 | `cache_write_tokens` | Hur mycket som skrevs till cachen. Högt vid första meddelandet och efter en paus på mer än en timme |
 | `web_searches` | Antal webbsökningar. Varje sökning tar några sekunder |
+| `skiss` | Vännen bad om en idéskiss i det här svaret |
+
+Skisserna loggar en egen rad: **Edge Functions → skiss → Logs**, sök på `skiss_timing`. `fal_ms` är tiden för SAM och bildmodellen, `masks` antalet masker, `total_ms` hela jobbet och `error` vad som gick fel.

@@ -23,8 +23,8 @@ Läs innan du börjar:
 - **Webbapp:** React och TypeScript som PWA (manifest, ikon, standalone). Publiceras på Vercel.
 - **Backend:** Supabase i EU-region: Postgres, Auth, Storage, Edge Functions, Realtime, pgvector.
 - **Rådgivaren:** Claude via Anthropics API, anropad från Edge Functions. Svar strömmas till klienten.
-- **Bild:** bildmodell för redigering av foton (väljs i etapp 0), anropad från Edge Functions som bakgrundsjobb. Resultat meddelas via Realtime.
-- **Konturer:** segmenteringsmodell (SAM) för masker.
+- **Bild:** bildmodell för redigering av foton via fal.ai (`supabase/functions/skiss/`), anropad som bakgrundsjobb. Resultat meddelas via Realtime.
+- **Konturer:** SAM 3 via fal.ai för masker. Originalets pixlar läggs tillbaka utanför masken i appen (`web/src/lib/komposit.ts`).
 
 ## Regler som inte får brytas
 
@@ -80,7 +80,8 @@ Inga verkliga personers namn, foton eller samtal i filerna. Skriv "testanvändar
 - `web/` – webbappen (Vite, React, TypeScript, vite-plugin-pwa). `npm test`, `npm run build`.
 - `supabase/migrations/` – databasen. Varje tabell har RLS och uttryckliga grants.
 - `supabase/functions/chat/` – ett samtalsvarv: strömmat svar från Claude och uppdatering av projektminnet.
-- `supabase/functions/radera-konto/` – raderar konto, foton (även i Anthropics Files API) och all data.
+- `supabase/functions/skiss/` – gör en idéskiss i bakgrunden: SAM 3 och bildmodell via fal.ai.
+- `supabase/functions/radera-konto/` – raderar konto, foton och skisser (även i Anthropics Files API) och all data.
 - `supabase/functions/_shared/anthropic.ts` – uppladdning och radering i Anthropics Files API.
 - `supabase/functions/_shared/prompt.ts` – genereras från `prompts/radgivaren.md` med `node scripts/sync-prompt.mjs`. Redigera aldrig filen för hand.
 - `.github/workflows/` – CI för tester, och driftsättning av Supabase när `main` ändras.
