@@ -15,6 +15,8 @@ Varje kriterium har ett id som används i testfallen.
 | S5 | Svar längre än ungefär fyra meningar, utöver listor och skisser | sällsynt, med skäl |
 | S6 | Frågor i serie som ett formulär, till exempel om stil, budget och familj i början | 0 |
 | S7 | Tid från första foto till första förslag | under 2 min (appen) |
+| S8 | Samma obesvarade fråga upprepas i flera svar i rad | 0 |
+| S9 | Påpekar att en fråga redan är ställd ("samma svar som sist") | 0 |
 
 ## Råd och ärlighet
 
