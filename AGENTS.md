@@ -44,6 +44,16 @@ Läs innan du börjar:
 - Skriv tester för logik (masker, bildbehandling, minnesuppdatering). Rådgivarens beteende testas med `evals/`.
 - Lägg aldrig in verkliga personers foton, namn eller samtal i repot. Testdata ska vara påhittad eller avidentifierad.
 
+## Struktur
+
+- `web/` – webbappen (Vite, React, TypeScript, vite-plugin-pwa). `npm test`, `npm run build`.
+- `supabase/migrations/` – databasen. Varje tabell har RLS och uttryckliga grants.
+- `supabase/functions/chat/` – ett samtalsvarv: strömmat svar från Claude och uppdatering av projektminnet.
+- `supabase/functions/radera-konto/` – raderar konto, foton och all data.
+- `supabase/functions/_shared/prompt.ts` – genereras från `prompts/radgivaren.md` med `node scripts/sync-prompt.mjs`. Redigera aldrig filen för hand.
+- `.github/workflows/` – CI för tester, och driftsättning av Supabase när `main` ändras.
+- `docs/driftsattning.md` – engångsuppsättning av konton och hemligheter.
+
 ## Status
 
-Etapp 0: systemprompten finns och testas i ett Claude-projekt. Ingen appkod ännu.
+Etapp 1a: samtalet i webbappen. Inloggning med kod, chatt med strömmade svar, foton av rummet och moodboard, projektminne och Var vi är, radering av konto. Idéskisser, markering av föremål, smakminne och katalog kommer i senare etapper.

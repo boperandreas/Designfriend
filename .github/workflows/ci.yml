@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: System prompt is in sync with prompts/radgivaren.md
+        run: node scripts/sync-prompt.mjs --check
+
+      - name: Web app tests and build
+        working-directory: web
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Edge function checks and tests
+        working-directory: supabase/functions
+        run: |
+          deno check chat/index.ts radera-konto/index.ts
+          deno test chat/lib.test.ts
