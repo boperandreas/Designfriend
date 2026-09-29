@@ -44,15 +44,18 @@ async function fail(sb: SupabaseClient, id: string, fel: string) {
   await sb.from("skiss").update({ status: "fel", fel, klar: new Date().toISOString() }).eq("id", id);
 }
 
-async function segment(imageUrl: string, omrade: string, key: string): Promise<string[]> {
+async function segment(imageUrl: string, omrade: string, key: string, log: unknown[]): Promise<string[]> {
   try {
     const out = await runFal(SAM_MODEL, {
       image_url: imageUrl, prompt: omrade, apply_mask: false, return_multiple_masks: true,
       max_masks: 3, include_scores: true, output_format: "png",
     }, key, 60_000);
-    return pickMasks(out);
+    const valda = pickMasks(out);
+    log.push({ omrade, masks: out.masks?.length ?? 0, scores: out.scores ?? null, kept: valda.length });
+    return valda;
   } catch (e) {
     console.error("sam failed", omrade, e);
+    log.push({ omrade, error: String(e).slice(0, 200) });
     return [];
   }
 }
@@ -81,8 +84,10 @@ async function run(sb: SupabaseClient, s: Skiss, key: string) {
     const imageUrl = signed.data.signedUrl;
 
     const omraden = cleanOmraden(s.omraden);
+    const sam: unknown[] = [];
+    timing.sam = sam;
     const [maskLists, edit] = await Promise.all([
-      Promise.all(omraden.map((o) => segment(imageUrl, o, key))),
+      Promise.all(omraden.map((o) => segment(imageUrl, o, key, sam))),
       runFal(MODEL, editInput(MODEL, s.instruktion, imageUrl), key),
     ]);
     timing.fal_ms = ms();

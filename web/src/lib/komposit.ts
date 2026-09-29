@@ -97,3 +97,36 @@ export function margins(w: number, h: number): { grow: number; soft: number } {
   const grow = Math.max(4, Math.round(Math.max(w, h) * 0.015))
   return { grow, soft: Math.max(2, Math.round(grow / 2)) }
 }
+
+/**
+ * Where two small, equally sized images clearly differ: 255 where the summed
+ * RGB difference exceeds the threshold. Used when SAM finds no mask, so the
+ * original can still be restored wherever the model did not really change
+ * anything. Mild colour shifts across the whole image stay below the threshold.
+ */
+export function diffMask(a: Uint8ClampedArray, b: Uint8ClampedArray, threshold = 90): Uint8Array {
+  const n = a.length / 4
+  const out = new Uint8Array(n)
+  for (let i = 0; i < n; i++) {
+    const j = i * 4
+    const d = Math.abs(a[j] - b[j]) + Math.abs(a[j + 1] - b[j + 1]) + Math.abs(a[j + 2] - b[j + 2])
+    if (d > threshold) out[i] = 255
+  }
+  return out
+}
+
+/** Shrink a binary mask by r pixels; removes specks smaller than the radius. */
+export function erode(mask: Uint8Array, w: number, h: number, r: number): Uint8Array {
+  const inv = mask.map((v) => (v ? 0 : 255))
+  return dilate(inv, w, h, r).map((v) => (v ? 0 : 255))
+}
+
+/** Nearest-neighbour upscale of a small mask to full size. */
+export function upscale(mask: Uint8Array, sw: number, sh: number, w: number, h: number): Uint8Array {
+  const out = new Uint8Array(w * h)
+  for (let y = 0; y < h; y++) {
+    const sy = Math.min(sh - 1, Math.floor((y * sh) / h))
+    for (let x = 0; x < w; x++) out[y * w + x] = mask[sy * sw + Math.min(sw - 1, Math.floor((x * sw) / w))]
+  }
+  return out
+}
