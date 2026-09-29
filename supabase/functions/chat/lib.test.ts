@@ -1,5 +1,5 @@
 import { deepStrictEqual as assertEquals, ok as assert } from "node:assert";
-import { alternate, buildContext, buildSystem, markHistoryCache, relativeTime, sourcePhoto } from "./lib.ts";
+import { alternate, bersOmSkiss, buildContext, buildSystem, markHistoryCache, relativeTime, sourcePhoto } from "./lib.ts";
 
 Deno.test("alternate merges consecutive same-role text and starts with user", () => {
   const out = alternate([
@@ -70,4 +70,11 @@ Deno.test("buildSystem is static and mentions sketches only when on", () => {
   assertEquals(buildSystem(true), buildSystem(true));
   assert(buildSystem(true).endsWith("kan du göra idéskisser med verktyget gor_skiss."));
   assert(buildSystem(false).endsWith("Beskriv idéskisser i ord."));
+});
+
+Deno.test("bersOmSkiss recognises requests to see a change", () => {
+  for (const t of ["Kan du visa bordet framför soffan?", "Ta bort fåtöljen", "Hur skulle det se ut med grön vägg?",
+    "Ja gärna", "Gör en ny bild med detta", "Ställ bordet mitt i rummet", "Byt mattan"]) assert(bersOmSkiss(t), t);
+  for (const t of ["Vad skulle du börja med?", "Soffan vill jag behålla. Hur påverkar det ditt förslag?",
+    "Här är vardagsrummet. Jag vill att det ska kännas lugnare och varmare.", "Det syns jättedåligt"]) assert(!bersOmSkiss(t), t);
 });

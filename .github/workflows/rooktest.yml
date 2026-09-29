@@ -13,6 +13,11 @@ on:
   push:
     branches: [rooktest]
 
+# One run at a time: two runs share the test room and mix their conversations.
+concurrency:
+  group: rooktest
+  cancel-in-progress: false
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
