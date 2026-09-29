@@ -14,6 +14,8 @@ Varje kriterium har ett id som används i testfallen.
 | S4 | Beröm av val, "bra fråga", superlativ eller emojis | 0 |
 | S5 | Svar längre än 60 ord, utöver listor och när användaren bett om mer | sällsynt, med skäl |
 | S11 | Mer än ett förslag i samma svar, eller en uppräkning av vad som syns i fotot | 0 |
+| S12 | Skiss som användaren inte bett om eller tackat ja till | 0 |
+| S13 | Fel i svenskan, till exempel böjning ("grönt soffa") | 0 |
 | S6 | Frågor i serie som ett formulär, till exempel om stil, budget och familj i början | 0 |
 | S7 | Tid från första foto till första förslag | under 2 min (appen) |
 | S8 | Samma obesvarade fråga upprepas i flera svar i rad | 0 |

@@ -23,8 +23,8 @@
 
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
-import { fetchFile, runFal } from "../_shared/fal.ts";
-import { cleanOmraden, dayStart, DEFAULT_MODEL, editInput, pickMasks, SAM_MODEL } from "./lib.ts";
+import { fetchFile, runFal, type FalResult } from "../_shared/fal.ts";
+import { cleanOmraden, dayStart, DEFAULT_MODEL, editInput, headNoun, pickMasks, SAM_MODEL } from "./lib.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
@@ -44,20 +44,28 @@ async function fail(sb: SupabaseClient, id: string, fel: string) {
   await sb.from("skiss").update({ status: "fel", fel, klar: new Date().toISOString() }).eq("id", id);
 }
 
+async function samOnce(imageUrl: string, prompt: string, key: string): Promise<FalResult> {
+  return await runFal(SAM_MODEL, {
+    image_url: imageUrl, prompt, apply_mask: false, return_multiple_masks: true,
+    max_masks: 3, include_scores: true, output_format: "png",
+  }, key, 60_000);
+}
+
+/** Masks for one area. Tries the full phrase, then its last word. */
 async function segment(imageUrl: string, omrade: string, key: string, log: unknown[]): Promise<string[]> {
-  try {
-    const out = await runFal(SAM_MODEL, {
-      image_url: imageUrl, prompt: omrade, apply_mask: false, return_multiple_masks: true,
-      max_masks: 3, include_scores: true, output_format: "png",
-    }, key, 60_000);
-    const valda = pickMasks(out);
-    log.push({ omrade, masks: out.masks?.length ?? 0, scores: out.scores ?? null, kept: valda.length });
-    return valda;
-  } catch (e) {
-    console.error("sam failed", omrade, e);
-    log.push({ omrade, error: String(e).slice(0, 200) });
-    return [];
+  for (const prompt of [omrade, headNoun(omrade)]) {
+    if (!prompt) continue;
+    try {
+      const out = await samOnce(imageUrl, prompt, key);
+      const valda = pickMasks(out);
+      log.push({ prompt, masks: out.masks?.length ?? 0, scores: out.scores ?? null, kept: valda.length });
+      if (valda.length) return valda;
+    } catch (e) {
+      console.error("sam failed", prompt, e);
+      log.push({ prompt, error: String(e).slice(0, 200) });
+    }
   }
+  return [];
 }
 
 async function run(sb: SupabaseClient, s: Skiss, key: string) {
