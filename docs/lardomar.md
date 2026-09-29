@@ -174,3 +174,8 @@ Format:
 **Hände:** SAM hittade varken fåtölj eller matta i röktestets foto av platta färgfält, två körningar i rad.
 **Åtgärd:** Röktestet gör en gång om fotot till ett fotorealistiskt rum med skissfunktionen och använder det sedan. SAM försöker igen med bara huvudordet ("armchair") om frasen inte ger träff.
 **Regel:** Testdata för bildmodeller ska likna det användarna laddar upp.
+
+### 2026-09-29 · Längdregeln följdes ena körningen men inte nästa, och prompten hade en trasig mening
+**Hände:** Med 0.2.1 blev svaren 45 till 56 ord, med 0.2.2 och ett fotorealistiskt foto 82 och 98 ord. Ett svar började "Visst, säger du till". Den frasen kom från promptens första mening: "Du pratar svenska, säger du till personen".
+**Åtgärd:** Prompt 0.2.3: längdgränsen står överst med ett exempel på 38 ord. Den trasiga meningen är omskriven.
+**Regel:** Det viktigaste om formen står överst i prompten, med ett exempel. När vännen skriver en udda fras, sök efter den i prompten först. Bedöm längd över flera körningar, inte en.
