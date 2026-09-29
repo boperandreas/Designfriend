@@ -18,7 +18,8 @@ Senast uppdaterad: 2026-09-29
 
 ## Nästa steg, i ordning
 
-0. **Prova skisserna på ett riktigt foto.** Testanvändaren ber om fåtöljen och pallen. Agenten läser `skiss_timing` (masker och poäng per område) och ser om SAM hittar möblerna.
+0. **Nytt utseende, varmt papper (2026-09-29).** Byggt och provat med skärmbilder i ljust och mörkt läge.
+   **Prova skisserna på ett riktigt foto.** Testanvändaren ber om fåtöljen och pallen. Agenten läser `skiss_timing` (masker och poäng per område) och ser om SAM hittar möblerna.
 
 1. **Svarstiden är mätt (2026-09-27, röktestet).** Effort high: första ordet efter 22,7 s, 9,2 s och 6,4 s. Effort low: 4,6 s, 1,9 s och 4,9 s, svar på cirka 150 tokens i stället för 1 668. Kvar är variation i Anthropics svarstid (1,5 till 4,7 s till första byte) och 0,2 till 0,6 s i databasen. Kör röktestet efter varje ändring som kan påverka tiden.
 2. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.

@@ -83,11 +83,14 @@ function Inloggad() {
   return (
     <div className="app">
       <header className="topbar">
-        {projekt.length > 1 ? (
-          <select aria-label="Rum" value={valt ?? ''} onChange={(e) => valj(e.target.value)}>
-            {projekt.map((p) => <option key={p.id} value={p.id}>{p.namn}</option>)}
-          </select>
-        ) : <h1>{aktuellt?.namn ?? 'Designfriend'}</h1>}
+        <div className="topbar-titel">
+          <span className="kicker">Designfriend</span>
+          {projekt.length > 1 ? (
+            <select aria-label="Rum" value={valt ?? ''} onChange={(e) => valj(e.target.value)}>
+              {projekt.map((p) => <option key={p.id} value={p.id}>{p.namn}</option>)}
+            </select>
+          ) : <h1>{aktuellt?.namn ?? 'Designfriend'}</h1>}
+        </div>
         <div className="topbar-actions">
           <button className="ghost" onClick={() => setVisaMinne(true)} disabled={!valt}>Var vi är</button>
           <button className="ghost" onClick={() => setMeny((m) => !m)} aria-expanded={meny}>Mer</button>

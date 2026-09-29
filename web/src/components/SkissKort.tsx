@@ -40,7 +40,8 @@ export function SkissKort({ skiss, originalPath }: { skiss: Skiss; originalPath:
         <span className="skiss-etikett">{fore ? 'I dag' : 'Skiss'}</span>
       </button>
       <figcaption>
-        {skiss.beskrivning} <span className="muted small">· AI-skiss · tryck för att jämföra</span>
+        <b>{skiss.beskrivning}</b>
+        <span className="muted small">AI-skiss · tryck för att jämföra</span>
       </figcaption>
     </figure>
   )

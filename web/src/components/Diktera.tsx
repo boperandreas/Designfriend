@@ -75,7 +75,7 @@ export function Diktera({ text, onText, onFel, disabled, avbryt }: Props) {
     <>
       <button
         type="button"
-        className={`mic${lyssnar ? ' lyssnar' : ''}`}
+        className={`rund mic${lyssnar ? ' lyssnar' : ''}`}
         onClick={lyssnar ? stop : start}
         disabled={disabled && !lyssnar}
         aria-pressed={lyssnar}
