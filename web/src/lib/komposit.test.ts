@@ -46,3 +46,22 @@ describe('margins', () => {
     expect(margins(2000, 1500)).toEqual({ grow: 30, soft: 15 })
   })
 })
+
+describe('diff fallback', () => {
+  it('finds a changed block and ignores a mild shift', async () => {
+    const { diffMask, erode, upscale } = await import('./komposit')
+    const w = 6, h = 6
+    const a = new Uint8ClampedArray(w * h * 4).fill(100)
+    const b = new Uint8ClampedArray(w * h * 4).fill(110) // mild shift everywhere
+    for (let y = 2; y < 5; y++) for (let x = 2; x < 5; x++) { const j = (y * w + x) * 4; b[j] = b[j + 1] = b[j + 2] = 220 }
+    b[0] = 250 // a single speck
+    const m = diffMask(a, b)
+    expect(m[3 * w + 3]).toBe(255)
+    expect(m[1]).toBe(0)
+    expect(m[0]).toBe(255)
+    const clean = erode(m, w, h, 1)
+    expect(clean[0]).toBe(0)
+    expect(clean[3 * w + 3]).toBe(255)
+    expect(Array.from(upscale(new Uint8Array([0, 255]), 2, 1, 4, 1))).toEqual([0, 0, 255, 255])
+  })
+})

@@ -152,3 +152,9 @@ Format:
 **Hände:** fal.ai:s standard är att genererade filer ligger kvar för alltid och kan läsas av alla som har adressen.
 **Åtgärd:** Varje anrop skickar huvuden för radering efter tio minuter och för att inte spara anropen. Resultatet kopieras till vår egen lagring.
 **Regel:** Läs lagringsvillkoren för varje ny extern tjänst som får användarnas foton, och skriv in valet i `docs/beslut.md`.
+
+### 2026-09-29 · SAM hittade inget i röktestets påhittade foto
+**Hände:** Första skissen i drift blev klar på 12,6 s, men SAM 3 gav ingen mask för "dark grey armchair" i röktestets foto, som är platta färgfält. Då visades bildmodellens bild rakt av, och resten av rummet kunde ha ändrats.
+**Orsak:** Troligen att SAM är tränad på riktiga foton. Loggen visade inte vad SAM svarade.
+**Åtgärd:** `skiss_timing` loggar nu antal masker och poäng per område. Hittar SAM inget jämför appen skissen med fotot i liten skala och lägger tillbaka originalet utanför det som tydligt ändrats.
+**Regel:** Varje steg i en kedja av modeller ska logga vad det fick tillbaka, inte bara om det lyckades.

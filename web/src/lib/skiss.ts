@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { blend, coverage, dilate, feather, margins, maskFromRGBA } from './komposit'
+import { blend, coverage, diffMask, dilate, erode, feather, margins, maskFromRGBA, upscale } from './komposit'
 
 export interface Skiss {
   id: string
@@ -61,15 +61,37 @@ export async function composeSketch(s: Skiss, originalPath: string): Promise<{ e
     if (coverage(one) > 0.9) continue // an inverted or broken mask would restore nothing
     for (let i = 0; i < one.length; i++) if (one[i]) union[i] = 255
   }
+  if (coverage(union) === 0) diffFallback(original, generated, w, h, union)
   const gen = pixels(ctx, generated, w, h)
   if (coverage(union) > 0) {
     const { grow, soft } = margins(w, h)
     const alpha = feather(dilate(union, w, h, grow), w, h, soft)
     ctx.putImageData(new ImageData(blend(orig, gen, alpha), w, h), 0, 0)
   }
-  // With no usable mask the generated image is shown as it is.
+  // If the whole room changed (a new style for everything) it is shown as it is.
   for (const b of [original, generated, ...masks]) b.close()
   return { efter: await toUrl(canvas), fore }
+}
+
+/**
+ * No mask from SAM: compare small versions of the two images and treat the
+ * clearly changed regions as the mask. Leaves the mask empty when most of the
+ * image changed, since then the model was asked to change the whole room.
+ */
+function diffFallback(original: ImageBitmap, generated: ImageBitmap, w: number, h: number, into: Uint8Array) {
+  const sw = Math.max(1, Math.round(w / 8))
+  const sh = Math.max(1, Math.round(h / 8))
+  const small = document.createElement('canvas')
+  small.width = sw
+  small.height = sh
+  const c = small.getContext('2d', { willReadFrequently: true })
+  if (!c) return
+  c.imageSmoothingQuality = 'high'
+  const a = pixels(c, original, sw, sh)
+  const b = pixels(c, generated, sw, sh)
+  const m = dilate(erode(diffMask(a, b), sw, sh, 1), sw, sh, 2)
+  if (coverage(m) > 0.6) return
+  into.set(upscale(m, sw, sh, w, h))
 }
 
 function toUrl(canvas: HTMLCanvasElement): Promise<string> {
