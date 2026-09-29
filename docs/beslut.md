@@ -80,3 +80,8 @@ Format:
 **Varför:** Regeln "erbjud en gång" bröts i hälften av röktesterna och blev tjat. Att be om en skiss är lätt när man vet att det går.
 **Följder:** Introtexten och skrivfältets ledtext nämner skisser. Vännen gör skiss bara på begäran.
 **Alternativ som valdes bort:** Kod som känner igen erbjudanden i tidigare svar (bryter mot regel 3), fler skärpningar av samma promptregel.
+
+### 2026-09-29 · Varmt papper: nytt utseende för appen
+**Varför:** Första versionen hade ett neutralt, kallt chattutseende (grågrönt, systemtypsnitt, bubblor på båda sidor). Testanvändaren är grafisk formgivare med varm, naturlig smak. Utvecklaren valde förslaget "varmt papper".
+**Följder:** Varmt ljust underlag och cognac som accent, mörk vägg med varmt ljus i mörkt läge. Fraunces i rubriker och bildtexter, Inter i löptext, båda från npm så att de fungerar utan uppkoppling. Vännens svar står fritt med en tunn linje; bara användarens meddelanden ligger i bubblor. NCS-koder i svaren visas som färgprov märkta "ungefär på skärm" (w3color-approximationen). Foto och moodboard läggs till bakom en plusknapp.
+**Alternativ som valdes bort:** Visa två eller tre riktningar för testanvändaren först. Kan göras senare; utseendet ligger i `web/src/styles.css`.

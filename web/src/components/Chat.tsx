@@ -22,6 +22,7 @@ export function Chat({ projektId }: { projektId: string }) {
   const [svarar, setSvarar] = useState(false)
   const [fel, setFel] = useState<string | null>(null)
   const [avbryt, setAvbryt] = useState(0)
+  const [laggTill, setLaggTill] = useState(false)
   const slut = useRef<HTMLDivElement>(null)
   const rumInput = useRef<HTMLInputElement>(null)
   const moodInput = useRef<HTMLInputElement>(null)
@@ -152,8 +153,8 @@ export function Chat({ projektId }: { projektId: string }) {
         {laddar && <p className="muted center">Hämtar samtalet…</p>}
         {tomt && (
           <div className="intro">
-            <p><strong>Börja med ett foto av rummet.</strong> Lägg gärna till några bilder du gillar, och skriv med egna ord vad du vill ändra eller hur det ska kännas.</p>
-            <p className="muted small">Vill du se en ändring kan du be om en skiss, till exempel ”visa rummet utan fåtöljen” eller ”visa en mörkgrön vägg bakom soffan”.</p>
+            <p><strong>Börja med ett foto av rummet.</strong> Tryck på plus för att lägga till det, och gärna några bilder du gillar. Skriv sedan med egna ord vad du vill ändra eller hur det ska kännas.</p>
+            <p className="muted">Vill du se en ändring kan du be om en skiss, till exempel ”visa rummet utan fåtöljen” eller ”visa en mörkgrön vägg bakom soffan”.</p>
           </div>
         )}
         {flode.map(({ m, s, i }) => {
@@ -190,23 +191,33 @@ export function Chat({ projektId }: { projektId: string }) {
             {laddarUpp > 0 && <span className="muted small">Laddar upp {laddarUpp}…</span>}
           </div>
         )}
-        <div className="attach">
-          <button type="button" onClick={() => rumInput.current?.click()}>Foto av rummet</button>
-          <button type="button" onClick={() => moodInput.current?.click()}>Bilder jag gillar</button>
-          <input ref={rumInput} type="file" accept="image/*" multiple hidden onChange={(e) => valjBilder(e, 'rum')} />
-          <input ref={moodInput} type="file" accept="image/*" multiple hidden onChange={(e) => valjBilder(e, 'moodboard')} />
-        </div>
+        {laggTill && (
+          <div className="lagg-till" id="lagg-till">
+            <button type="button" onClick={() => { setLaggTill(false); rumInput.current?.click() }}>Foto av rummet</button>
+            <button type="button" onClick={() => { setLaggTill(false); moodInput.current?.click() }}>Bilder jag gillar</button>
+          </div>
+        )}
+        <input ref={rumInput} type="file" accept="image/*" multiple hidden onChange={(e) => valjBilder(e, 'rum')} />
+        <input ref={moodInput} type="file" accept="image/*" multiple hidden onChange={(e) => valjBilder(e, 'moodboard')} />
         <div className="input-row">
+          <button type="button" className="rund" aria-label="Lägg till bilder" aria-expanded={laggTill} aria-controls="lagg-till"
+            onClick={() => setLaggTill((v) => !v)}>
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
           <label htmlFor="meddelande" className="sr-only">Meddelande</label>
           <textarea
-            id="meddelande" rows={1} placeholder={meddelanden.length ? 'Skriv, eller be om en skiss…' : 'Skriv till vännen…'} value={text}
+            id="meddelande" rows={1} placeholder="Skriv till vännen…" value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer: fine)').matches) { e.preventDefault(); skicka() } }}
           />
           <Diktera text={text} onText={setText} onFel={setFel} disabled={svarar} avbryt={avbryt} />
-          <button type="button" className="primary" onClick={skicka}
+          <button type="button" className="rund skicka" onClick={skicka} aria-label="Skicka"
             disabled={svarar || laddarUpp > 0 || (!text.trim() && !bilagor.length)}>
-            Skicka
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M6 11l6-6 6 6" />
+            </svg>
           </button>
         </div>
       </div>

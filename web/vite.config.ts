@@ -16,8 +16,8 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        background_color: '#F3F5F2',
-        theme_color: '#F3F5F2',
+        background_color: '#F3EEE6',
+        theme_color: '#F3EEE6',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -27,6 +27,8 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
+        // Swedish needs only the Latin subsets of the fonts.
+        globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,vietnamese}-*.woff2'],
       },
     }),
   ],
