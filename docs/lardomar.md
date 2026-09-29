@@ -189,3 +189,8 @@ Format:
 **Hände:** Med 0.2.2, 0.2.3 och 0.2.4 erbjöd vännen skiss två eller tre gånger i rad i hälften av körningarna, trots allt skarpare regler om "högst en gång".
 **Åtgärd:** Prompt 0.2.5: vännen erbjuder inte skisser alls. Appen visar i stället i introtexten och i skrivfältet att man kan be om en skiss.
 **Regel:** En regel som kräver att modellen räknar sina egna tidigare svar är svag. Gör om den till en enkel regel och flytta upptäckbarheten till gränssnittet.
+
+### 2026-09-29 · Vännen gjorde sitt eget antagande till användarens beslut
+**Hände:** I ett röktest skrev vännen "om du vill behålla mattan" och behandlade i nästa svar mattan som en fast punkt, trots att testanvändaren aldrig sagt det.
+**Åtgärd:** Prompt 0.2.6: bara det hon sagt är bestämt. Regeln om "du i stället för ni" togs bort; utvecklaren anser att "ni" kan vara ett artigt du.
+**Regel:** Läs röktestets svar i följd, inte ett och ett. Fel i resonemanget syns först mellan svaren.
