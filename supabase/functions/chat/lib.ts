@@ -44,7 +44,8 @@ export const SKISS_TOOL = {
   name: "gor_skiss",
   description: "Gör en idéskiss: ändrar ett av användarens rumsfoton med en bildmodell, till exempel tar bort " +
     "en möbel, byter en matta eller målar en vägg. Skissen görs i bakgrunden och dyker upp i samtalet efter " +
-    "ungefär en halv minut. Allt utanför områdena lämnas pixel för pixel som i fotot. Högst en skiss per svar.",
+    "ungefär en halv minut. Allt utanför områdena lämnas pixel för pixel som i fotot. Högst en skiss per svar. " +
+    "Skriv alltid en kort mening till användaren innan du anropar verktyget.",
   input_schema: {
     type: "object",
     properties: {
