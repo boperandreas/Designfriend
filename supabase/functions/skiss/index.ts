@@ -24,7 +24,7 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { fetchFile, runFal, type FalResult } from "../_shared/fal.ts";
-import { cleanOmraden, dayStart, DEFAULT_MODEL, editInput, headNoun, pickMasks, SAM_MODEL } from "./lib.ts";
+import { cleanOmraden, cleanPlatser, dayStart, DEFAULT_MODEL, editInput, headNoun, pickMasks, SAM_MODEL } from "./lib.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
@@ -33,7 +33,7 @@ const PER_DYGN = Number(Deno.env.get("SKISS_PER_DYGN") ?? "20");
 
 interface Skiss {
   id: string; projekt_id: string; user_id: string; kalla_bild_id: string | null;
-  instruktion: string; omraden: string[];
+  instruktion: string; omraden: string[]; platser: unknown; forlagor: string[];
 }
 
 function json(status: number, body: unknown) {
@@ -91,12 +91,22 @@ async function run(sb: SupabaseClient, s: Skiss, key: string) {
     if (!signed.data?.signedUrl) throw new Error("could not sign source photo");
     const imageUrl = signed.data.signedUrl;
 
+    // Reference images, for example a table from the moodboard.
+    const { data: refRader } = s.forlagor?.length
+      ? await sb.from("bild").select("id,sokvag").in("id", s.forlagor)
+      : { data: [] };
+    const refVagar = (refRader ?? []).map((r) => r.sokvag as string);
+    const refSigned = refVagar.length ? await sb.storage.from("bilder").createSignedUrls(refVagar, 900) : { data: [] };
+    const refUrls = (refSigned.data ?? []).map((d) => d.signedUrl).filter((u): u is string => Boolean(u));
+    timing.forlagor = refUrls.length;
+    timing.platser = cleanPlatser(s.platser).length;
+
     const omraden = cleanOmraden(s.omraden);
     const sam: unknown[] = [];
     timing.sam = sam;
     const [maskLists, edit] = await Promise.all([
       Promise.all(omraden.map((o) => segment(imageUrl, o, key, sam))),
-      runFal(MODEL, editInput(MODEL, s.instruktion, imageUrl), key),
+      runFal(MODEL, editInput(MODEL, s.instruktion, imageUrl, refUrls), key),
     ]);
     timing.fal_ms = ms();
     const resultUrl: string | undefined = edit.images?.[0]?.url;
@@ -158,7 +168,7 @@ Deno.serve(async (req) => {
   // Claim the row, so a repeated call never starts the same job twice.
   const { data: skiss } = await sb.from("skiss").update({ status: "pagar" })
     .eq("id", payload.skiss_id).eq("status", "ny")
-    .select("id,projekt_id,user_id,kalla_bild_id,instruktion,omraden").maybeSingle();
+    .select("id,projekt_id,user_id,kalla_bild_id,instruktion,omraden,platser,forlagor").maybeSingle();
   if (!skiss) return json(409, { error: "Skissen är redan igång eller klar." });
 
   EdgeRuntime.waitUntil(run(sb, skiss as Skiss, key));

@@ -59,9 +59,29 @@ export const SKISS_TOOL = {
       omraden: {
         type: "array",
         items: { type: "string" },
-        description: "Delarna av fotot som får ändras, som korta engelska substantivfraser, till exempel " +
-          "['dark armchair', 'footstool']. För en ny matta: ['rug', 'floor']. För en vägg: ['wall behind the sofa']. " +
-          "Tom lista bara när hela rummet får ändras.",
+        description: "Föremål i fotot som ska tas bort eller ändras, som korta engelska namn på saker som syns, " +
+          "till exempel ['dark armchair', 'white footstool', 'rug']. Bara föremål, aldrig ytor eller lägen som " +
+          "'area in front of sofa'. Ta inte med sådant som ska vara kvar, till exempel soffan. Tom lista bara när " +
+          "hela rummet får ändras.",
+      },
+      platser: {
+        type: "array",
+        description: "Var något nytt ska stå, som rutor i procent av fotot (0–100, från övre vänstra hörnet). " +
+          "Ta i så att hela det nya och dess skugga ryms, men inte mer. Behövs när något läggs till eller flyttas, " +
+          "till exempel ett bord framför soffan: [{x: 30, y: 58, bredd: 32, hojd: 22}].",
+        items: {
+          type: "object",
+          properties: {
+            x: { type: "number" }, y: { type: "number" }, bredd: { type: "number" }, hojd: { type: "number" },
+          },
+          required: ["x", "y", "bredd", "hojd"],
+        },
+      },
+      forlagor: {
+        type: "array",
+        items: { type: "integer" },
+        description: "Nummer på bilder i bildlistan som bildmodellen ska få som förlaga, till exempel ett bord " +
+          "användaren visat. Nämn förlagan i instruktionen: 'the coffee table from the second image'.",
       },
       beskrivning: { type: "string", description: "Kort bildtext på svenska under skissen, till exempel 'Utan fåtöljen och pallen'." },
     },

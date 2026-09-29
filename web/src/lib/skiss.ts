@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { blend, coverage, diffMask, dilate, erode, feather, margins, maskFromRGBA, upscale } from './komposit'
+import { blend, coverage, diffMask, dilate, erode, feather, fillBoxes, margins, maskFromRGBA, upscale, type Plats } from './komposit'
 
 export interface Skiss {
   id: string
@@ -8,11 +8,12 @@ export interface Skiss {
   status: 'ny' | 'pagar' | 'klar' | 'fel'
   sokvag: string | null
   masker: string[]
+  platser?: Plats[]
   fel: string | null
   skapad: string
 }
 
-export const SKISS_FALT = 'id,kalla_bild_id,beskrivning,status,sokvag,masker,fel,skapad'
+export const SKISS_FALT = 'id,kalla_bild_id,beskrivning,status,sokvag,masker,platser,fel,skapad'
 
 /** Remove the note the server adds to a reply when it orders a sketch. */
 export function utanSkissNotis(text: string): string {
@@ -61,6 +62,8 @@ export async function composeSketch(s: Skiss, originalPath: string): Promise<{ e
     if (coverage(one) > 0.9) continue // an inverted or broken mask would restore nothing
     for (let i = 0; i < one.length; i++) if (one[i]) union[i] = 255
   }
+  // Where something new is placed, for example a table in front of the sofa.
+  fillBoxes(union, w, h, Array.isArray(s.platser) ? s.platser : [])
   if (coverage(union) === 0) diffFallback(original, generated, w, h, union)
   const gen = pixels(ctx, generated, w, h)
   if (coverage(union) > 0) {

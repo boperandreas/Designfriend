@@ -65,3 +65,17 @@ describe('diff fallback', () => {
     expect(Array.from(upscale(new Uint8Array([0, 255]), 2, 1, 4, 1))).toEqual([0, 0, 255, 255])
   })
 })
+
+describe('fillBoxes', () => {
+  it('marks a box given in percent', async () => {
+    const { fillBoxes } = await import('./komposit')
+    const w = 10, h = 10
+    const m = new Uint8Array(w * h)
+    fillBoxes(m, w, h, [{ x: 20, y: 50, bredd: 30, hojd: 20 }])
+    expect(m[5 * w + 2]).toBe(255)
+    expect(m[6 * w + 4]).toBe(255)
+    expect(m[5 * w + 5]).toBe(0)
+    expect(m[7 * w + 2]).toBe(0)
+    expect(m.filter(Boolean).length).toBe(6)
+  })
+})

@@ -212,3 +212,9 @@ Format:
 ### 2026-09-29 · pkill stängde agentens eget skal
 **Hände:** `pkill -f "vite preview"` i samma kommando som commit avbröt hela kommandot.
 **Regel:** Stoppa bakgrundsprocesser i ett eget kommando.
+
+### 2026-09-29 · Skisser där något läggs till blev trasiga
+**Hände:** Testanvändaren bad om ett soffbord framför soffan i stället för fåtöljen och pallen. Skisserna visade ett halvt bord, en avhuggen fäll och mörka fläckar, och bordet liknade inte hennes bild.
+**Orsak:** Tre fel i agentens bygge. (1) Masken täckte bara det som togs bort. Ytan där bordet skulle stå fanns inte med, så bara bitar av bordet syntes. Vännen försökte med "rug area in front of sofa", men SAM hittar föremål, inte ytor. (2) Nytt försök med sista ordet gjorde frasen till "sofa", så soffan ritades om. (3) Bildmodellen fick aldrig bordsbilden, bara vännens beskrivning.
+**Åtgärd:** Verktyget har `platser` (rutor för det nya) och `forlagor` (bilder som förlaga). Sista ordet används bara för korta föremålsnamn. Nano Banana i 2K. Prompt 0.2.7. Röktestet ber om ett bord från en förlaga.
+**Regel:** Pröva varje ny bildfunktion med användarens typiska begäran (ta bort, lägga till, byta) innan hon får den. Röktestet ska innehålla en begäran av varje slag.
