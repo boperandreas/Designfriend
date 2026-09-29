@@ -78,3 +78,9 @@ Deno.test("bersOmSkiss recognises requests to see a change", () => {
   for (const t of ["Vad skulle du börja med?", "Soffan vill jag behålla. Hur påverkar det ditt förslag?",
     "Här är vardagsrummet. Jag vill att det ska kännas lugnare och varmare.", "Det syns jättedåligt"]) assert(!bersOmSkiss(t), t);
 });
+
+Deno.test("buildContext says whether a sketch starts at once", () => {
+  assert(buildContext({}, null, new Date(), [], true).includes("startar direkt"));
+  assert(buildContext({}, null, new Date(), [], false).includes("som ett förslag med en knapp"));
+  assert(!buildContext({}, null, new Date(), []).includes("knapp"));
+});

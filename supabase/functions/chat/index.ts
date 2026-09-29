@@ -222,7 +222,10 @@ Deno.serve(async (req) => {
       : m.text,
   }));
   const skisser = (skissRes.data ?? []) as SkissRad[];
-  historyMsgs.push({ role: "user", content: `${buildContext(minne, lastAt, new Date(), skisser)}\n\n${userText}` });
+  historyMsgs.push({
+    role: "user",
+    content: `${buildContext(minne, lastAt, new Date(), skisser, SKISSER ? bersOmSkiss(text) : undefined)}\n\n${userText}`,
+  });
 
   const bildBlock = imageBlocks(bildLista);
   const prefix: ApiMessage[] = bildBlock.length

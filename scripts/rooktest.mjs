@@ -125,35 +125,51 @@ if (process.env.SKISS !== "0") {
 }
 
 // A synthetic product photo of a table, used as the reference ("förlaga") the
-// last message asks for. Made once from the room photo with the sketch
-// function and kept as the room's moodboard image.
-const BORD = "Ignore the room. Create a clean product photo of one oval coffee table with a grey and white marble top " +
-  "and a brushed brass four-star base, on a plain light grey studio background, seen slightly from above.";
+// last message asks for. Made once from a plain grey image with the sketch
+// function, then stored as the room's moodboard image under bord-v2.jpg.
+const BORD = "Turn this plain grey image into a clean studio product photo of one oval coffee table with a grey and " +
+  "white marble top and a brushed brass four-star base, on a light grey background, seen slightly from above. " +
+  "Only the table, no room, no other furniture.";
 if (process.env.SKISS !== "0") {
-  const mood = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&typ=eq.moodboard&select=id`, { headers: h }), "list moodboard")).json();
-  const rum = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&typ=eq.rum&select=id`, { headers: h }), "list room photos")).json();
-  if (!mood.length && rum.length) {
+  const mood = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&typ=eq.moodboard&select=id,sokvag`, { headers: h }), "list moodboard")).json();
+  if (!mood.some((b) => b.sokvag.endsWith("/bord-v2.jpg"))) {
     console.log("Making the reference table photo (once)");
+    for (const b of mood) await must(await fetch(`${URL_}/rest/v1/bild?id=eq.${b.id}`, { method: "DELETE", headers: h }), "drop old table");
+    const gra = `${uid}/${projekt.id}/gra.jpg`;
+    await fetch(`${URL_}/storage/v1/object/bilder/${gra}`, {
+      method: "POST", headers: { ...h, "Content-Type": "image/jpeg", "x-upsert": "true" },
+      body: readFileSync(new URL("./rooktest-gra.jpg", import.meta.url)),
+    });
+    const graRad = (await (await must(await fetch(`${URL_}/rest/v1/bild`, {
+      method: "POST", headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" },
+      body: JSON.stringify({ projekt_id: projekt.id, typ: "rum", sokvag: gra }),
+    }), "save grey")).json())[0];
     const skiss = (await (await must(await fetch(`${URL_}/rest/v1/skiss`, {
       method: "POST",
       headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" },
-      body: JSON.stringify({ projekt_id: projekt.id, kalla_bild_id: rum[0].id, beskrivning: "Röktestets bord", instruktion: BORD, omraden: [] }),
+      body: JSON.stringify({ projekt_id: projekt.id, kalla_bild_id: graRad.id, beskrivning: "Röktestets bord", instruktion: BORD, omraden: [] }),
     }), "order table")).json())[0];
     await must(await fetch(`${URL_}/functions/v1/skiss`, {
       method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ skiss_id: skiss.id }),
     }), "start table");
     const klar = await waitSketch(skiss.id);
     if (klar?.status === "klar") {
+      const bild = await must(await fetch(`${URL_}/storage/v1/object/authenticated/bilder/${klar.sokvag}`, { headers: h }), "download table");
+      const sokvag = `${uid}/${projekt.id}/bord-v2.jpg`;
+      await must(await fetch(`${URL_}/storage/v1/object/bilder/${sokvag}`, {
+        method: "POST", headers: { ...h, "Content-Type": "image/jpeg", "x-upsert": "true" }, body: Buffer.from(await bild.arrayBuffer()),
+      }), "upload table");
       const rad = (await (await must(await fetch(`${URL_}/rest/v1/bild`, {
         method: "POST",
         headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" },
-        body: JSON.stringify({ projekt_id: projekt.id, typ: "moodboard", sokvag: klar.sokvag }),
+        body: JSON.stringify({ projekt_id: projekt.id, typ: "moodboard", sokvag }),
       }), "save table photo")).json())[0];
       nyBild = [...nyBild, rad.id];
     } else {
       console.log("Could not make the table photo:", klar?.fel ?? "timeout");
     }
     await must(await fetch(`${URL_}/rest/v1/skiss?id=eq.${skiss.id}`, { method: "DELETE", headers: h }), "drop table sketch");
+    await must(await fetch(`${URL_}/rest/v1/bild?id=eq.${graRad.id}`, { method: "DELETE", headers: h }), "drop grey");
   }
 }
 
