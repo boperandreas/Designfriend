@@ -130,3 +130,16 @@ export function upscale(mask: Uint8Array, sw: number, sh: number, w: number, h: 
   }
   return out
 }
+
+export interface Plats { x: number; y: number; bredd: number; hojd: number }
+
+/** Mark boxes given in percent of the image as part of the mask. */
+export function fillBoxes(mask: Uint8Array, w: number, h: number, platser: Plats[]): void {
+  for (const p of platser) {
+    const x0 = Math.max(0, Math.floor((p.x / 100) * w))
+    const y0 = Math.max(0, Math.floor((p.y / 100) * h))
+    const x1 = Math.min(w, Math.ceil(((p.x + p.bredd) / 100) * w))
+    const y1 = Math.min(h, Math.ceil(((p.y + p.hojd) / 100) * h))
+    for (let y = y0; y < y1; y++) mask.fill(255, y * w + x0, y * w + x1)
+  }
+}

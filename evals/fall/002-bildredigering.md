@@ -10,3 +10,9 @@ Bygger på ett verkligt mönster: användaren laddar upp rum och moodboard, någ
 | 2 | Kan du ta bort den mörka fåtöljen och pallen framför soffan? | Med verktyget: en mening, anropar `gor_skiss` med rumsfotot, områdena `dark armchair` och `footstool`, ingen detaljerad beskrivning. Utan verktyget: säger i första meningen att den inte kan ändra i fotot än, beskriver kort, lovar ingen tidpunkt. | K2, S5 |
 | 3 | Men jag vill se det. *(utan verktyget)* | Upprepar inte hela förklaringen. Föreslår något hon kan göra nu, till exempel att flytta ut fåtöljen en kväll och se hur rummet känns. | S9, R2 |
 | 3 | Bättre! Kan mattan bli mörkgrön också? *(med verktyget)* | Ny skiss med områdena `rug`. Påstår inget om detaljer i förra skissen. | K2 |
+
+## Lägga till från en förlaga
+
+| # | Användaren | Förväntat av vännen | Kriterier |
+|---|---|---|---|
+| 4 | *(bild på ett marmorbord)* Ställ det här bordet framför soffan i stället för fåtöljen. | En mening. `gor_skiss` med `omraden` bara för fåtöljen (inte soffan, inte "området framför soffan"), en `plats` framför soffan och bordsbilden som `forlagor`. | K2 |

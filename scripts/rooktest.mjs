@@ -124,11 +124,44 @@ if (process.env.SKISS !== "0") {
   }
 }
 
+// A synthetic product photo of a table, used as the reference ("förlaga") the
+// last message asks for. Made once from the room photo with the sketch
+// function and kept as the room's moodboard image.
+const BORD = "Ignore the room. Create a clean product photo of one oval coffee table with a grey and white marble top " +
+  "and a brushed brass four-star base, on a plain light grey studio background, seen slightly from above.";
+if (process.env.SKISS !== "0") {
+  const mood = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&typ=eq.moodboard&select=id`, { headers: h }), "list moodboard")).json();
+  const rum = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&typ=eq.rum&select=id`, { headers: h }), "list room photos")).json();
+  if (!mood.length && rum.length) {
+    console.log("Making the reference table photo (once)");
+    const skiss = (await (await must(await fetch(`${URL_}/rest/v1/skiss`, {
+      method: "POST",
+      headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" },
+      body: JSON.stringify({ projekt_id: projekt.id, kalla_bild_id: rum[0].id, beskrivning: "Röktestets bord", instruktion: BORD, omraden: [] }),
+    }), "order table")).json())[0];
+    await must(await fetch(`${URL_}/functions/v1/skiss`, {
+      method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ skiss_id: skiss.id }),
+    }), "start table");
+    const klar = await waitSketch(skiss.id);
+    if (klar?.status === "klar") {
+      const rad = (await (await must(await fetch(`${URL_}/rest/v1/bild`, {
+        method: "POST",
+        headers: { ...h, "Content-Type": "application/json", Prefer: "return=representation" },
+        body: JSON.stringify({ projekt_id: projekt.id, typ: "moodboard", sokvag: klar.sokvag }),
+      }), "save table photo")).json())[0];
+      nyBild = [...nyBild, rad.id];
+    } else {
+      console.log("Could not make the table photo:", klar?.fel ?? "timeout");
+    }
+    await must(await fetch(`${URL_}/rest/v1/skiss?id=eq.${skiss.id}`, { method: "DELETE", headers: h }), "drop table sketch");
+  }
+}
+
 console.log(`Room ${projekt.id}, sending ${N} messages`);
 const rows = [];
 const skissSteg = process.env.SKISS !== "0";
 const texter = Array.from({ length: N }, (_, i) => MEDDELANDEN[i % MEDDELANDEN.length]);
-if (skissSteg) texter.push("Kan du visa hur rummet ser ut utan den grå fåtöljen?");
+if (skissSteg) texter.push("Kan du visa bordet på bilden jag gillar framför soffan, i stället för den grå fåtöljen?");
 for (let i = 0; i < texter.length; i++) {
   const text = texter[i];
   const t0 = performance.now();
@@ -157,7 +190,7 @@ if (skissSteg) {
   let rad = null;
   while (performance.now() - t0 < 180_000) {
     const alla = await (await must(await fetch(
-      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&select=status,ms,modell,masker,fel,beskrivning&order=skapad.desc`, { headers: h },
+      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&select=status,ms,modell,masker,platser,forlagor,fel,beskrivning&order=skapad.desc`, { headers: h },
     ), "read sketch")).json();
     if (alla.length > 1) console.log(`Note: ${alla.length} sketches, only the last message asked for one (S12).`);
     rad = alla[0] ?? null;
@@ -168,6 +201,7 @@ if (skissSteg) {
     console.log("Sketch: the advisor did not ask for one (or sketches are off: FAL_KEY missing).");
   } else {
     console.table([{ status: rad.status, beskrivning: rad.beskrivning, modell: rad.modell, masker: rad.masker?.length ?? 0,
+      platser: rad.platser?.length ?? 0, forlagor: rad.forlagor?.length ?? 0,
       ms: rad.ms, vantat_ms: Math.round(performance.now() - t0), fel: rad.fel ?? "" }]);
     if (rad.status !== "klar") process.exitCode = 1;
   }

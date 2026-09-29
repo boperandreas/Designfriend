@@ -1,9 +1,26 @@
 import assert from "node:assert/strict";
-import { cleanOmraden, editInput, editPrompt, headNoun, pickMasks } from "./lib.ts";
+import { cleanOmraden, cleanPlatser, editInput, editPrompt, headNoun, pickMasks } from "./lib.ts";
 
 Deno.test("headNoun keeps the last word of a phrase", () => {
   assert.equal(headNoun("dark grey armchair"), "armchair");
   assert.equal(headNoun("rug"), null);
+  assert.equal(headNoun("rug area in front of sofa"), null);
+  assert.equal(headNoun("area on rug"), null);
+  assert.equal(headNoun("white footstool"), "footstool");
+});
+
+Deno.test("cleanPlatser clamps boxes and drops nonsense", () => {
+  assert.deepEqual(cleanPlatser([{ x: 30, y: 55, bredd: 30, hojd: 20 }, { x: 90, y: 90, bredd: 30, hojd: 30 }, { x: "a" }, null]),
+    [{ x: 30, y: 55, bredd: 30, hojd: 20 }, { x: 90, y: 90, bredd: 10, hojd: 10 }]);
+  assert.deepEqual(cleanPlatser("x"), []);
+});
+
+Deno.test("editInput sends references after the photo", () => {
+  const input = editInput("fal-ai/nano-banana-2/edit", "Add the table from the second image.", "rum", ["bord"]);
+  assert.deepEqual(input.image_urls, ["rum", "bord"]);
+  assert.equal(input.resolution, "2K");
+  assert.ok(String(input.prompt).startsWith("The first image is the photo of the room"));
+  assert.ok(!editPrompt("x").includes("references"));
 });
 
 Deno.test("cleanOmraden trims, dedupes and caps", () => {
@@ -26,7 +43,7 @@ Deno.test("editPrompt asks to keep the rest", () => {
 });
 
 Deno.test("editInput adapts to the model", () => {
-  assert.equal(editInput("fal-ai/nano-banana-2/edit", "x", "u").resolution, "1K");
+  assert.equal(editInput("fal-ai/nano-banana-2/edit", "x", "u").resolution, "2K");
   assert.equal(editInput("openai/gpt-image-2/edit", "x", "u").quality, "medium");
   assert.equal(editInput("fal-ai/flux-2-pro/edit", "x", "u").num_images, undefined);
 });

@@ -361,6 +361,10 @@ Deno.serve(async (req) => {
           projekt_id: projektId, kalla_bild_id: kalla.id, beskrivning,
           instruktion: String(skiss.instruktion).slice(0, 2000),
           omraden: Array.isArray(skiss.omraden) ? skiss.omraden.map(String) : [],
+          platser: Array.isArray(skiss.platser) ? skiss.platser.slice(0, 4) : [],
+          forlagor: (Array.isArray(skiss.forlagor) ? skiss.forlagor : [])
+            .map((n: unknown) => bildLista[Number(n) - 1]?.id).filter((id: string | undefined) => id && id !== kalla.id)
+            .slice(0, 3),
         }).select("id").single();
         if (error || !rad) {
           console.error("could not create sketch", error?.message);

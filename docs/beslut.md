@@ -85,3 +85,8 @@ Format:
 **Varför:** Första versionen hade ett neutralt, kallt chattutseende (grågrönt, systemtypsnitt, bubblor på båda sidor). Testanvändaren är grafisk formgivare med varm, naturlig smak. Utvecklaren valde förslaget "varmt papper".
 **Följder:** Varmt ljust underlag och cognac som accent, mörk vägg med varmt ljus i mörkt läge. Fraunces i rubriker och bildtexter, Inter i löptext, båda från npm så att de fungerar utan uppkoppling. Vännens svar står fritt med en tunn linje; bara användarens meddelanden ligger i bubblor. NCS-koder i svaren visas som färgprov märkta "ungefär på skärm" (w3color-approximationen). Foto och moodboard läggs till bakom en plusknapp.
 **Alternativ som valdes bort:** Visa två eller tre riktningar för testanvändaren först. Kan göras senare; utseendet ligger i `web/src/styles.css`.
+
+### 2026-09-29 · Plats och förlaga i skisserna
+**Varför:** Att lägga till något kräver en yta som får ändras, och SAM kan bara hitta föremål. Claude ser fotot och kan ange en ungefärlig ruta. Bildmodellen behöver se föremålet användaren visat för att det ska likna.
+**Följder:** Masken är föremålen från SAM plus rutorna, växta och utmjukade. Förlagor skickas som extra bilder till bildmodellen. Upplösningen är 2K (cirka 1,20 kr per skiss i stället för 0,80 kr).
+**Alternativ som valdes bort:** Masken ur skillnaden mellan skiss och foto (fångar allt modellen råkat ändra), låta användaren rita rutan (senare, med markering genom tryck).
