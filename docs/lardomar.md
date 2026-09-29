@@ -184,3 +184,8 @@ Format:
 **Hände:** Prompt 0.2.3 höll längden i båda körningarna (44 till 53 ord). I den ena erbjöd vännen ändå en skiss tre gånger i rad med olika ord. I båda beställdes skissen utan en enda mening till användaren.
 **Åtgärd:** Prompt 0.2.4: ett erbjudande en enda gång oavsett formulering, de flesta svar utan fråga, alltid en mening före skissen. Samma sak i verktygets beskrivning.
 **Regel:** Kör röktestet minst två gånger efter en promptändring. Ett fel som syns en gång av två kommer att nå användaren.
+
+### 2026-09-29 · Att räkna erbjudanden gick inte att styra med prompten
+**Hände:** Med 0.2.2, 0.2.3 och 0.2.4 erbjöd vännen skiss två eller tre gånger i rad i hälften av körningarna, trots allt skarpare regler om "högst en gång".
+**Åtgärd:** Prompt 0.2.5: vännen erbjuder inte skisser alls. Appen visar i stället i introtexten och i skrivfältet att man kan be om en skiss.
+**Regel:** En regel som kräver att modellen räknar sina egna tidigare svar är svag. Gör om den till en enkel regel och flytta upptäckbarheten till gränssnittet.
