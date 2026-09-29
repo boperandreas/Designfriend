@@ -1,11 +1,11 @@
-import { supabase } from './supabase'
+import { supabase, SUPABASE_KEY, SUPABASE_URL } from './supabase'
 import { blend, coverage, diffMask, dilate, erode, feather, fillBoxes, margins, maskFromRGBA, upscale, type Plats } from './komposit'
 
 export interface Skiss {
   id: string
   kalla_bild_id: string | null
   beskrivning: string
-  status: 'ny' | 'pagar' | 'klar' | 'fel'
+  status: 'forslag' | 'ny' | 'pagar' | 'klar' | 'fel'
   sokvag: string | null
   masker: string[]
   platser?: Plats[]
@@ -17,7 +17,20 @@ export const SKISS_FALT = 'id,kalla_bild_id,beskrivning,status,sokvag,masker,pla
 
 /** Remove the note the server adds to a reply when it orders a sketch. */
 export function utanSkissNotis(text: string): string {
-  return text.replace(/\s*\[Skiss beställd: [^\]]*\]\s*$/, '').trim()
+  return text.replace(/\s*\[Skiss (beställd|föreslagen): [^\]]*\]\s*$/, '').trim()
+}
+
+/** Start a sketch the advisor suggested, when the user taps it. */
+export async function startaSkiss(id: string): Promise<void> {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  if (!token) throw new Error('Du behöver logga in igen.')
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/skiss`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ skiss_id: id }),
+  })
+  if (res.status !== 202 && res.status !== 409) throw new Error('Skissen gick inte att starta. Försök igen.')
 }
 
 async function bitmaps(paths: string[]): Promise<ImageBitmap[]> {

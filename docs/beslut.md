@@ -90,3 +90,8 @@ Format:
 **Varför:** Att lägga till något kräver en yta som får ändras, och SAM kan bara hitta föremål. Claude ser fotot och kan ange en ungefärlig ruta. Bildmodellen behöver se föremålet användaren visat för att det ska likna.
 **Följder:** Masken är föremålen från SAM plus rutorna, växta och utmjukade. Förlagor skickas som extra bilder till bildmodellen. Upplösningen är 2K (cirka 1,20 kr per skiss i stället för 0,80 kr).
 **Alternativ som valdes bort:** Masken ur skillnaden mellan skiss och foto (fångar allt modellen råkat ändra), låta användaren rita rutan (senare, med markering genom tryck).
+
+### 2026-09-29 · Skissförslag med knapp i stället för förbud
+**Varför:** Vännen vill visa skisser, och promptregler stoppade det inte. En skiss kostar pengar och tid. Ett förslag som användaren själv startar ger henne kontrollen, och vännens idé blir en funktion i stället för tjat.
+**Följder:** `skiss.status` kan vara `forslag`. `chat` avgör med en ordlista (`bersOmSkiss`) om användaren bett att få se något; det är en kostnadsspärr, inte en regel om tonen, och därför i koden. Förslag räknas inte mot dygnstaket förrän de startas.
+**Alternativ som valdes bort:** Fler promptskärpningar; ta bort verktyget när användaren inte bett om bild (då påstår vännen att den inte kan göra skisser); en separat modell som bedömer begäran (fördröjning och kostnad).

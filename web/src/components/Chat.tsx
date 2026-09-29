@@ -210,7 +210,8 @@ export function Chat({ projektId }: { projektId: string }) {
           </div>
         )}
         {flode.map(({ m, s, i }) => {
-          if (s) return <SkissKort key={s.id} skiss={s} originalPath={s.kalla_bild_id ? vagar[s.kalla_bild_id] : undefined} />
+          if (s) return <SkissKort key={s.id} skiss={s} originalPath={s.kalla_bild_id ? vagar[s.kalla_bild_id] : undefined}
+            onStart={() => setSkisser((l) => l.map((x) => (x.id === s.id ? { ...x, status: 'ny' } : x)))} />
           if (!m) return null
           const text = m.roll === 'assistant' ? utanSkissNotis(m.text) : m.text
           if (m.roll === 'assistant' && !text && m.text) return null

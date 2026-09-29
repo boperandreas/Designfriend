@@ -190,9 +190,10 @@ if (skissSteg) {
   let rad = null;
   while (performance.now() - t0 < 180_000) {
     const alla = await (await must(await fetch(
-      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&select=status,ms,modell,masker,platser,forlagor,fel,beskrivning&order=skapad.desc`, { headers: h },
+      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&status=neq.forslag&select=status,ms,modell,masker,platser,forlagor,fel,beskrivning&order=skapad.desc`, { headers: h },
     ), "read sketch")).json();
-    if (alla.length > 1) console.log(`Note: ${alla.length} sketches, only the last message asked for one (S12).`);
+    // Suggestions (status forslag) wait for a tap and are left out here.
+    if (alla.length > 1) console.log(`Note: ${alla.length} sketches started, only the last message asked for one (S12).`);
     rad = alla[0] ?? null;
     if (rad && (rad.status === "klar" || rad.status === "fel")) break;
     await new Promise((r) => setTimeout(r, 3000));

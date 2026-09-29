@@ -228,3 +228,12 @@ Format:
 **Hände:** Med en bordsbild i moodboarden erbjöd vännen skiss och gjorde sedan en som ingen bett om, trots promptens "gör en skiss bara när hon ber om det". Verktygsbeskrivningen sa bara vad verktyget gör.
 **Åtgärd:** Villkoret står nu också i beskrivningen av `gor_skiss`, med exempel på vad som räknas som en begäran. Prompt 0.2.8 säger att information, som att soffan ska vara kvar, inte är en begäran.
 **Regel:** När ett verktyg bara får användas under vissa villkor ska villkoret stå i verktygets egen beskrivning, inte bara i systemprompten.
+
+### 2026-09-29 · Promptregler räckte inte för att stoppa oombedda skisser
+**Hände:** Efter fyra promptversioner och en skärpt verktygsbeskrivning erbjöd vännen fortfarande skisser och gjorde skisser ingen bett om, i ungefär varannan körning. Med en bordsbild i moodboarden blev det vanligare.
+**Åtgärd:** Vännen får föreslå skisser genom att anropa verktyget. En skiss startar direkt bara när användarens meddelande innehåller en begäran ("visa", "ta bort", "hur skulle det se ut", "ja"). Annars visas den som ett förslag med knappen "Gör skissen". Prompt 0.3.0.
+**Regel:** När en regel om modellens beteende bryts gång på gång trots skärpningar, flytta den till gränssnittet: låt modellen föreslå och användaren bestämma. Det som kostar pengar ska användaren sätta igång.
+
+### 2026-09-29 · En push startade röktestet två gånger
+**Hände:** Två körningar av röktestet startade samtidigt på samma push och blandade sina samtal i samma testrum.
+**Åtgärd:** `concurrency` i arbetsflödet, så att bara en körning går åt gången.

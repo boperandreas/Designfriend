@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
 
   // Claim the row, so a repeated call never starts the same job twice.
   const { data: skiss } = await sb.from("skiss").update({ status: "pagar" })
-    .eq("id", payload.skiss_id).eq("status", "ny")
+    .eq("id", payload.skiss_id).in("status", ["ny", "forslag"])
     .select("id,projekt_id,user_id,kalla_bild_id,instruktion,omraden,platser,forlagor").maybeSingle();
   if (!skiss) return json(409, { error: "Skissen är redan igång eller klar." });
 

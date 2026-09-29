@@ -28,7 +28,7 @@ import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { ANTHROPIC_API, anthropicHeaders, uploadFile } from "../_shared/anthropic.ts";
 import {
-  alternate, buildContext, buildSystem, CACHE, markHistoryCache, SKISS_TOOL, sourcePhoto,
+  alternate, bersOmSkiss, buildContext, buildSystem, CACHE, markHistoryCache, SKISS_TOOL, sourcePhoto,
   type ApiMessage, type Block, type Roll, type SkissRad,
 } from "./lib.ts";
 
@@ -347,7 +347,12 @@ Deno.serve(async (req) => {
       const beskrivning = String(skiss?.beskrivning ?? "Idéskiss").slice(0, 200);
       console.log(JSON.stringify({ event: "chat_timing", model: MODEL, effort: EFFORT, ...timing }));
 
-      const slutsvar = [svar.trim(), skissOk ? `[Skiss beställd: ${beskrivning}]` : ""].filter(Boolean).join("\n\n");
+      // A sketch starts at once only when the user asked to see something;
+      // otherwise it waits as a suggestion she can tap.
+      const direkt = bersOmSkiss(text);
+      timing.skiss_direkt = skissOk ? direkt : undefined;
+      const notis = skissOk ? `[${direkt ? "Skiss beställd" : "Skiss föreslagen"}: ${beskrivning}]` : "";
+      const slutsvar = [svar.trim(), notis].filter(Boolean).join("\n\n");
       if (slutsvar) {
         const { error } = await sb.from("meddelande").insert({ projekt_id: projektId, roll: "assistant", text: slutsvar });
         if (error) console.error("could not save reply", error.message);
@@ -358,7 +363,7 @@ Deno.serve(async (req) => {
 
       if (skiss && kalla && skissOk) {
         const { data: rad, error } = await sb.from("skiss").insert({
-          projekt_id: projektId, kalla_bild_id: kalla.id, beskrivning,
+          projekt_id: projektId, kalla_bild_id: kalla.id, beskrivning, status: direkt ? "ny" : "forslag",
           instruktion: String(skiss.instruktion).slice(0, 2000),
           omraden: Array.isArray(skiss.omraden) ? skiss.omraden.map(String) : [],
           platser: Array.isArray(skiss.platser) ? skiss.platser.slice(0, 4) : [],
@@ -368,7 +373,7 @@ Deno.serve(async (req) => {
         }).select("id").single();
         if (error || !rad) {
           console.error("could not create sketch", error?.message);
-        } else {
+        } else if (direkt) {
           EdgeRuntime.waitUntil(fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/skiss`, {
             method: "POST",
             headers: { Authorization: authHeader, apikey: publicKey, "Content-Type": "application/json" },

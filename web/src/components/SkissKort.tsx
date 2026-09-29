@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { composeSketch, type Skiss } from '../lib/skiss'
+import { composeSketch, startaSkiss, type Skiss } from '../lib/skiss'
 
 /** One idea sketch in the conversation: waiting, failed, or before/after. */
-export function SkissKort({ skiss, originalPath }: { skiss: Skiss; originalPath: string | undefined }) {
+export function SkissKort({ skiss, originalPath, onStart }: { skiss: Skiss; originalPath: string | undefined; onStart?: () => void }) {
   const [bild, setBild] = useState<{ efter: string; fore: string } | null>(null)
   const [fore, setFore] = useState(false)
   const [fel, setFel] = useState<string | null>(null)
+  const [startar, setStartar] = useState(false)
 
   useEffect(() => {
     if (skiss.status !== 'klar' || !originalPath) return
@@ -20,6 +21,20 @@ export function SkissKort({ skiss, originalPath }: { skiss: Skiss; originalPath:
     if (bild) { URL.revokeObjectURL(bild.efter); URL.revokeObjectURL(bild.fore) }
   }, [bild])
 
+  if (skiss.status === 'forslag' && !startar) {
+    return (
+      <div className="skiss forslag">
+        <p><span className="muted small">Förslag på skiss</span><br /><b>{skiss.beskrivning}</b></p>
+        <button type="button" className="primary" onClick={async () => {
+          setStartar(true)
+          try { await startaSkiss(skiss.id); onStart?.() } catch (e) {
+            setStartar(false); setFel(e instanceof Error ? e.message : 'Skissen gick inte att starta.')
+          }
+        }}>Gör skissen</button>
+        {fel && <p className="fel">{fel}</p>}
+      </div>
+    )
+  }
   if (skiss.status === 'fel') {
     return <div className="skiss"><p className="fel">{skiss.fel ?? 'Skissen gick inte att göra.'}</p></div>
   }

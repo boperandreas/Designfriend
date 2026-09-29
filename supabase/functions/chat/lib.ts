@@ -37,7 +37,19 @@ export function buildSystem(skisser = false): string {
 
 export interface SkissRad { beskrivning: string; status: string; skapad: string }
 
-const STATUS: Record<string, string> = { ny: "på väg", pagar: "på väg", klar: "klar och visad", fel: "misslyckades" };
+const STATUS: Record<string, string> = {
+  forslag: "föreslagen som knapp, inte gjord", ny: "på väg", pagar: "på väg", klar: "klar och visad", fel: "misslyckades",
+};
+
+// Words that ask to see a change. Only then does a sketch start at once;
+// otherwise it waits as a suggestion until the user taps it. This is a cost
+// guard: prompt rules alone did not stop unasked sketches (docs/lardomar.md).
+const BER_OM_BILD = /(^|[^a-zåäö])(visa|visar|skiss\w*|rita|bild\w*|se ut|se hur|hur skulle|hur blir|hur ser|gör en|ta bort|tar bort|ta väck|lägg till|lägga till|byt|byta|ersätt|ställ|flytta|måla|prova|testa|ja|japp|gärna|gör det|kör)([^a-zåäö]|$)/i;
+
+/** True when the user's message asks to see a change in the photo. */
+export function bersOmSkiss(text: string): boolean {
+  return BER_OM_BILD.test(text);
+}
 
 /** The tool the advisor uses to ask for an idea sketch. */
 export const SKISS_TOOL = {
@@ -45,9 +57,9 @@ export const SKISS_TOOL = {
   description: "Gör en idéskiss: ändrar ett av användarens rumsfoton med en bildmodell, till exempel tar bort " +
     "en möbel, byter en matta eller målar en vägg. Skissen görs i bakgrunden och dyker upp i samtalet efter " +
     "ungefär en halv minut. Allt utanför områdena lämnas pixel för pixel som i fotot. Högst en skiss per svar. " +
-    "Använd verktyget bara när användarens senaste meddelande ber om att få se en ändring, till exempel " +
-    "\"visa\", \"gör en bild\", \"hur skulle det se ut\" eller ett ja till en fråga om skiss. Annars aldrig, " +
-    "och erbjud det inte. Skriv alltid en kort mening till användaren innan du anropar verktyget.",
+    "Har användaren bett att få se en ändring görs skissen direkt: skriv då en kort mening om den först. Har hon " +
+    "inte bett om det, kan du ändå anropa verktyget när en bild verkligen skulle hjälpa: appen visar skissen som " +
+    "ett förslag hon kan trycka på. Skriv då ingenting om skissen i svaret och fråga inte om hon vill se den.",
   input_schema: {
     type: "object",
     properties: {

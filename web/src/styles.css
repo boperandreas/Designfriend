@@ -126,6 +126,8 @@ button:disabled { opacity: .5; cursor: default; }
 
 /* Idea sketches */
 .skiss { align-self: stretch; margin: 0; display: grid; gap: 8px; }
+.skiss.forslag { padding: 2px 0 2px 14px; border-left: 2px dashed var(--accent); justify-items: start; gap: 10px; }
+.skiss.forslag b { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 1.15rem; }
 .skiss.vantar { padding: 2px 0 2px 14px; border-left: 2px dashed var(--line); }
 .skiss-bild { position: relative; padding: 0; border: 0; background: none; display: block; width: 100%; }
 .skiss-bild img { width: 100%; height: auto; border-radius: 6px; display: block; }
