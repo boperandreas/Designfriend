@@ -158,3 +158,8 @@ Format:
 **Orsak:** Troligen att SAM är tränad på riktiga foton. Loggen visade inte vad SAM svarade.
 **Åtgärd:** `skiss_timing` loggar nu antal masker och poäng per område. Hittar SAM inget jämför appen skissen med fotot i liten skala och lägger tillbaka originalet utanför det som tydligt ändrats.
 **Regel:** Varje steg i en kedja av modeller ska logga vad det fick tillbaka, inte bara om det lyckades.
+
+### 2026-09-29 · "Kort" i prompten gav 100 till 150 ord
+**Hände:** Med prompt 0.2.0 blev röktestets svar 153, 95 och 103 ord, trots "två till fyra meningar". Första svaret räknade upp allt i fotot. Flera svar hade två förslag och en extra poäng på slutet. Agenten rapporterade dessutom längden i tokens men kallade det ord.
+**Åtgärd:** Prompt 0.2.1: högst 60 ord, ett förslag per svar, ingen uppräkning av fotot. Kriterium S5 skärpt och S11 nytt.
+**Regel:** Skriv mätbara gränser i prompten (antal ord) i stället för bara "kort". Rapportera längd i ord, räknade i svaren, inte tokens från loggen.
