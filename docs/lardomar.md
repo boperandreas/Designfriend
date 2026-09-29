@@ -237,3 +237,8 @@ Format:
 ### 2026-09-29 · En push startade röktestet två gånger
 **Hände:** Två körningar av röktestet startade samtidigt på samma push och blandade sina samtal i samma testrum.
 **Åtgärd:** `concurrency` i arbetsflödet, så att bara en körning går åt gången.
+
+### 2026-09-29 · Röktestets förlaga var rummet med ett bord, inte ett produktfoto
+**Hände:** Bordsbilden som röktestet gjorde från rumsfotot blev samma rum med ett bord. Vännen sa "moodboarden visar samma rum", och testet liknade inte en riktig förlaga.
+**Åtgärd:** Bordsbilden görs från en tom grå bild och sparas som `bord-v2.jpg`. Vännen får också veta i sammanhanget om en skiss startar direkt eller blir ett förslag, så att texten stämmer med kortet.
+**Regel:** Titta på vad testet faktiskt skickar in. Vännens svar avslöjar ofta när testdatan är fel.

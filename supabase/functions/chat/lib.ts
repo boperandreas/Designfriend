@@ -120,6 +120,7 @@ export function buildContext(
   lastMessageAt: string | null,
   now = new Date(),
   skisser: SkissRad[] = [],
+  skissBegaran?: boolean,
 ): string {
   const minneText = minne && Object.keys(minne as object).length
     ? JSON.stringify(minne, null, 2)
@@ -131,7 +132,10 @@ export function buildContext(
   const skissText = skisser.length
     ? `\n\nSenaste idéskisser:\n${skisser.map((s) => `- ${s.beskrivning} (${STATUS[s.status] ?? s.status}, ${relativeTime(s.skapad, now.getTime())})`).join("\n")}`
     : "";
-  return `<sammanhang>\nDagens datum: ${today}. ${last}\n\nProjektminne:\n${minneText}${skissText}\n</sammanhang>`;
+  const begaran = skissBegaran === undefined ? "" : skissBegaran
+    ? "\n\nHennes senaste meddelande ber om att få se en ändring. En skiss du gör nu startar direkt."
+    : "\n\nHennes senaste meddelande ber inte om en skiss. Anropar du verktyget visas skissen som ett förslag med en knapp. Skriv då ingenting om skissen och fråga inte om hon vill se den.";
+  return `<sammanhang>\nDagens datum: ${today}. ${last}${begaran}\n\nProjektminne:\n${minneText}${skissText}\n</sammanhang>`;
 }
 
 // Merge consecutive messages with the same role; the API needs alternation.
