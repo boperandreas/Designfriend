@@ -179,3 +179,8 @@ Format:
 **Hände:** Med 0.2.1 blev svaren 45 till 56 ord, med 0.2.2 och ett fotorealistiskt foto 82 och 98 ord. Ett svar började "Visst, säger du till". Den frasen kom från promptens första mening: "Du pratar svenska, säger du till personen".
 **Åtgärd:** Prompt 0.2.3: längdgränsen står överst med ett exempel på 38 ord. Den trasiga meningen är omskriven.
 **Regel:** Det viktigaste om formen står överst i prompten, med ett exempel. När vännen skriver en udda fras, sök efter den i prompten först. Bedöm längd över flera körningar, inte en.
+
+### 2026-09-29 · Två körningar med samma prompt gav olika fel
+**Hände:** Prompt 0.2.3 höll längden i båda körningarna (44 till 53 ord). I den ena erbjöd vännen ändå en skiss tre gånger i rad med olika ord. I båda beställdes skissen utan en enda mening till användaren.
+**Åtgärd:** Prompt 0.2.4: ett erbjudande en enda gång oavsett formulering, de flesta svar utan fråga, alltid en mening före skissen. Samma sak i verktygets beskrivning.
+**Regel:** Kör röktestet minst två gånger efter en promptändring. Ett fel som syns en gång av två kommer att nå användaren.
