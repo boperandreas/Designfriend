@@ -35,7 +35,7 @@ export function buildSystem(skisser = false): string {
     : `${filled}\n\nDu kan inte skapa bilder ännu i den här versionen av appen. Beskriv idéskisser i ord.`;
 }
 
-export interface SkissRad { beskrivning: string; status: string; skapad: string }
+export interface SkissRad { id?: string; beskrivning: string; status: string; skapad: string; instruktion?: string; kalla_bild_id?: string | null }
 
 const STATUS: Record<string, string> = {
   forslag: "föreslagen som knapp, inte gjord", ny: "på väg", pagar: "på väg", klar: "klar och visad", fel: "misslyckades",
@@ -44,7 +44,7 @@ const STATUS: Record<string, string> = {
 // Words that ask to see a change. Only then does a sketch start at once;
 // otherwise it waits as a suggestion until the user taps it. This is a cost
 // guard: prompt rules alone did not stop unasked sketches (docs/lardomar.md).
-const BER_OM_BILD = /(^|[^a-zåäö])(visa|visar|skiss\w*|rita|bild\w*|se ut|se hur|hur skulle|hur blir|hur ser|gör en|ta bort|tar bort|ta väck|lägg till|lägga till|byt|byta|ersätt|ställ|flytta|måla|prova|testa|ja|japp|gärna|gör det|kör)([^a-zåäö]|$)/i;
+const BER_OM_BILD = /(^|[^a-zåäö])(visa|visar|skiss\w*|rita|bild\w*|se ut|se hur|hur skulle|hur blir|hur ser|gör en|gör om|ta bort|tar bort|ta väck|lägg till|lägga till|lägg tillbaka|tillbaka|byt|byta|ersätt|ställ|flytta|måla|ändra|fixa|prova|testa|ja|japp|gärna|gör det|kör)([^a-zåäö]|$)/i;
 
 /** True when the user's message asks to see a change in the photo. */
 export function bersOmSkiss(text: string): boolean {
@@ -98,6 +98,12 @@ export const SKISS_TOOL = {
           "användaren visat. Nämn förlagan i instruktionen: 'the coffee table from the second image'.",
       },
       beskrivning: { type: "string", description: "Kort bildtext på svenska under skissen, till exempel 'Utan fåtöljen och pallen'." },
+      fran_skiss: {
+        type: "boolean",
+        description: "true när hon vill ändra i den senaste skissen ('sista bilden', 'i skissen', 'lägg tillbaka…'). " +
+          "Skissen utgår då från den senaste färdiga skissen, och allt som redan ändrats där ligger kvar exakt. " +
+          "Beskriv då bara den nya ändringen, och namnge föremålen som de ser ut i den skissen.",
+      },
     },
     required: ["bild", "instruktion", "omraden", "beskrivning"],
   },
@@ -129,8 +135,10 @@ export function buildContext(
   const last = lastMessageAt
     ? `Förra meddelandet i samtalet skickades ${relativeTime(lastMessageAt, now.getTime())}.`
     : "Det här är början på samtalet.";
+  const senastKlar = skisser.find((s) => s.status === "klar");
   const skissText = skisser.length
-    ? `\n\nSenaste idéskisser:\n${skisser.map((s) => `- ${s.beskrivning} (${STATUS[s.status] ?? s.status}, ${relativeTime(s.skapad, now.getTime())})`).join("\n")}`
+    ? `\n\nSenaste idéskisser, nyast först:\n${skisser.map((s) => `- ${s.beskrivning} (${STATUS[s.status] ?? s.status}, ${relativeTime(s.skapad, now.getTime())})`).join("\n")}` +
+      (senastKlar?.instruktion ? `\nDen senaste färdiga skissen gjordes med instruktionen: ${senastKlar.instruktion.slice(0, 600)}` : "")
     : "";
   const begaran = skissBegaran === undefined ? "" : skissBegaran
     ? "\n\nHennes senaste meddelande ber om att få se en ändring. En skiss du gör nu startar direkt."

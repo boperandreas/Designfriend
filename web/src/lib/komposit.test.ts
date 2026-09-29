@@ -79,3 +79,18 @@ describe('fillBoxes', () => {
     expect(m.filter(Boolean).length).toBe(6)
   })
 })
+
+describe('boxAround', () => {
+  it('fills the grown rectangle around a mask', async () => {
+    const { boxAround } = await import('./komposit')
+    const w = 10, h = 10
+    const m = new Uint8Array(w * h); m[4 * w + 4] = 255; m[5 * w + 6] = 255
+    const into = new Uint8Array(w * h)
+    expect(boxAround(m, w, h, 0.1, into)).toBe(true)
+    expect(into[3 * w + 3]).toBe(255)
+    expect(into[6 * w + 7]).toBe(255)
+    expect(into[2 * w + 2]).toBe(0)
+    expect(into.filter(Boolean).length).toBe(20)
+    expect(boxAround(new Uint8Array(w * h), w, h, 0.1, into)).toBe(false)
+  })
+})

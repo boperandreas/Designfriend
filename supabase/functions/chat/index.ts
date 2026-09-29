@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
     sb.from("bild").select("id,typ,sokvag,favorit,kommentar,anthropic_file_id").eq("projekt_id", projektId)
       .order("skapad", { ascending: true }).limit(IMAGE_LIMIT),
     sb.from("projektminne").select("innehall").eq("projekt_id", projektId).maybeSingle(),
-    sb.from("skiss").select("beskrivning,status,skapad").eq("projekt_id", projektId)
+    sb.from("skiss").select("id,beskrivning,status,skapad,instruktion,kalla_bild_id").eq("projekt_id", projektId)
       .order("skapad", { ascending: false }).limit(5),
   ]);
   timing.db_ms = ms();
@@ -344,7 +344,11 @@ Deno.serve(async (req) => {
           console.error("gor_skiss: invalid input JSON");
         }
       }
-      const kalla = skiss ? sourcePhoto(bildLista, skiss.bild) : undefined;
+      // "Change the last sketch": build on the latest finished sketch, keeping
+      // the room photo it came from.
+      const forra = skiss?.fran_skiss === true ? skisser.find((s) => s.status === "klar") : undefined;
+      const rotBild = forra?.kalla_bild_id ? bildLista.find((b) => b.id === forra.kalla_bild_id) : undefined;
+      const kalla = skiss ? (rotBild ?? sourcePhoto(bildLista, skiss.bild)) : undefined;
       const skissOk = Boolean(skiss && kalla && typeof skiss.instruktion === "string");
       if (skiss && !skissOk) console.error("gor_skiss: no room photo or instruction", skiss.bild);
       const beskrivning = String(skiss?.beskrivning ?? "Idéskiss").slice(0, 200);
@@ -366,7 +370,8 @@ Deno.serve(async (req) => {
 
       if (skiss && kalla && skissOk) {
         const { data: rad, error } = await sb.from("skiss").insert({
-          projekt_id: projektId, kalla_bild_id: kalla.id, beskrivning, status: direkt ? "ny" : "forslag",
+          projekt_id: projektId, kalla_bild_id: kalla.id, kalla_skiss_id: forra?.id ?? null, beskrivning,
+          status: direkt ? "ny" : "forslag",
           instruktion: String(skiss.instruktion).slice(0, 2000),
           omraden: Array.isArray(skiss.omraden) ? skiss.omraden.map(String) : [],
           platser: Array.isArray(skiss.platser) ? skiss.platser.slice(0, 4) : [],

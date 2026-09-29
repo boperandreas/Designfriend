@@ -242,3 +242,9 @@ Format:
 **Hände:** Bordsbilden som röktestet gjorde från rumsfotot blev samma rum med ett bord. Vännen sa "moodboarden visar samma rum", och testet liknade inte en riktig förlaga.
 **Åtgärd:** Bordsbilden görs från en tom grå bild och sparas som `bord-v2.jpg`. Vännen får också veta i sammanhanget om en skiss startar direkt eller blir ett förslag, så att texten stämmer med kortet.
 **Regel:** Titta på vad testet faktiskt skickar in. Vännens svar avslöjar ofta när testdatan är fel.
+
+### 2026-09-29 · Skisser föll på för många anslutningar och gamla möbler syntes kvar
+**Hände:** Utvecklaren provade sex skisser i rad. En misslyckades med "Too many connections issued to the database", en annan kunde inte hämtas i appen. Där en soffa eller matta bytts syntes delar av den gamla kvar. "Sista bilden, lägg tillbaka soffan" gav en helt ny tolkning i stället för en rättning.
+**Orsak:** Skissfunktionen laddade upp resultat och masker samtidigt, och appen hämtade alla skissers filer samtidigt. Supabases gratisnivå tillåter få anslutningar. Masken följde det gamla föremålets kontur, så en ny form med annan kontur klipptes. Varje skiss utgick från originalfotot.
+**Åtgärd:** En fil i taget med nya försök, i funktionen och i appen. Masken är rektangeln runt föremålet med 5 % marginal. Appen sparar skissen som den visas (`visad_sokvag`), och en ny skiss kan bygga på den (`kalla_skiss_id`, verktygets `fran_skiss`). Prompt 0.3.1. Röktestet ber om en ändring i sista skissen.
+**Regel:** Allt som gör många anrop mot Supabase gör dem ett i taget, med nya försök.

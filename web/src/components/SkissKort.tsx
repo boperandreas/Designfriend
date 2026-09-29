@@ -15,7 +15,8 @@ export function SkissKort({ skiss, originalPath, onStart }: { skiss: Skiss; orig
       .then((b) => { if (aktiv) setBild(b) })
       .catch((e) => { if (aktiv) setFel(e instanceof Error ? e.message : 'Kunde inte visa skissen.') })
     return () => { aktiv = false }
-  }, [skiss, originalPath])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skiss.id, skiss.status, skiss.sokvag, originalPath])
 
   useEffect(() => () => {
     if (bild) { URL.revokeObjectURL(bild.efter); URL.revokeObjectURL(bild.fore) }
