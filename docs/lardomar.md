@@ -163,3 +163,14 @@ Format:
 **Hände:** Med prompt 0.2.0 blev röktestets svar 153, 95 och 103 ord, trots "två till fyra meningar". Första svaret räknade upp allt i fotot. Flera svar hade två förslag och en extra poäng på slutet. Agenten rapporterade dessutom längden i tokens men kallade det ord.
 **Åtgärd:** Prompt 0.2.1: högst 60 ord, ett förslag per svar, ingen uppräkning av fotot. Kriterium S5 skärpt och S11 nytt.
 **Regel:** Skriv mätbara gränser i prompten (antal ord) i stället för bara "kort". Rapportera längd i ord, räknade i svaren, inte tokens från loggen.
+
+### 2026-09-29 · Vännen erbjöd skiss två gånger och gjorde den ändå
+**Hände:** I röktestet frågade vännen "Vill du se…?" två svar i rad utan att få svar, och beställde sedan en skiss som ingen bett om. Samma körning hade "Grönt soffa" och ett svar som började med "Bra".
+**Orsak:** Prompten tillät skisser "när en bild säger mer än ord", och regeln om att inte upprepa frågor gällde inte tydligt erbjudanden.
+**Åtgärd:** Prompt 0.2.2: skiss bara när hon ber om det eller tackar ja, erbjudandet högst en gång. Inget "Bra" som inledning. Korrekt böjning. Kriterier S12 och S13. Röktestet räknar skisserna.
+**Regel:** En skiss kostar pengar och tid. Allt som kostar görs bara när användaren bett om det.
+
+### 2026-09-29 · Röktestets foto gick inte att använda för SAM
+**Hände:** SAM hittade varken fåtölj eller matta i röktestets foto av platta färgfält, två körningar i rad.
+**Åtgärd:** Röktestet gör en gång om fotot till ett fotorealistiskt rum med skissfunktionen och använder det sedan. SAM försöker igen med bara huvudordet ("armchair") om frasen inte ger träff.
+**Regel:** Testdata för bildmodeller ska likna det användarna laddar upp.

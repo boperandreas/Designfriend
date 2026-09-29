@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { cleanOmraden, editInput, editPrompt, pickMasks } from "./lib.ts";
+import { cleanOmraden, editInput, editPrompt, headNoun, pickMasks } from "./lib.ts";
+
+Deno.test("headNoun keeps the last word of a phrase", () => {
+  assert.equal(headNoun("dark grey armchair"), "armchair");
+  assert.equal(headNoun("rug"), null);
+});
 
 Deno.test("cleanOmraden trims, dedupes and caps", () => {
   assert.deepEqual(cleanOmraden([" dark armchair ", "Dark armchair", "", 3, "footstool", "rug", "lamp", "plant"]),

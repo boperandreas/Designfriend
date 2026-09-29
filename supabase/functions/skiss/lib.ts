@@ -56,6 +56,15 @@ export function pickMasks(out: SamOutput, min = 0.4): string[] {
   return (kept.length ? kept : masks.slice(0, 1)).map((m) => m.url);
 }
 
+/**
+ * The last word of a phrase ("dark grey armchair" -> "armchair"). SAM 3 is
+ * tried again with it when the full phrase finds nothing.
+ */
+export function headNoun(omrade: string): string | null {
+  const ord = omrade.trim().split(/\s+/)
+  return ord.length > 1 ? ord[ord.length - 1] : null
+}
+
 /** Start of the rolling 24-hour window used for the daily cap. */
 export function dayStart(now = new Date()): string {
   return new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
