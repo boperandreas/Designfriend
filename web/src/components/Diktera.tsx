@@ -40,26 +40,46 @@ export function Diktera({ text, onText, onFel, disabled, avbryt }: Props) {
 
   useEffect(() => () => rec.current?.abort(), [])
 
+  // Send pressed: stop listening at once. iPhone does not always report that
+  // recognition has ended, so the button is reset here rather than in onend.
+  useEffect(() => { avsluta(true) }, [avbryt])
+
+  // A session that has gone silent for a minute is reset, so the button never
+  // stays stuck in "listening".
+  const senast = useRef(0)
   useEffect(() => {
-    if (!rec.current) return
-    rec.current.onresult = null
-    rec.current.abort()
-  }, [avbryt])
+    if (!lyssnar) return
+    const t = setInterval(() => { if (Date.now() - senast.current > 60000) avsluta(true) }, 5000)
+    return () => clearInterval(t)
+  }, [lyssnar])
+
+  function avsluta(abort: boolean) {
+    const r = rec.current
+    rec.current = null
+    setLyssnar(false)
+    if (!r) return
+    r.onresult = null
+    r.onend = null
+    r.onerror = null
+    try { if (abort) r.abort(); else r.stop() } catch { /* already stopped */ }
+  }
 
   function start() {
     const Ctor = recognitionCtor()
     if (!Ctor) { setTips((t) => !t); return }
+    avsluta(true)
     const r = new Ctor()
     r.lang = 'sv-SE'
     r.continuous = true
     r.interimResults = true
     const base = textRef.current
-    r.onresult = (e) => onText(combine(base, e.results))
-    r.onerror = (e) => { const m = felText(e.error); if (m) onFel(m) }
-    r.onend = () => { setLyssnar(false); rec.current = null }
+    r.onresult = (e) => { senast.current = Date.now(); onText(combine(base, e.results)) }
+    r.onerror = (e) => { const m = felText(e.error); if (m) onFel(m); if (rec.current === r) avsluta(false) }
+    r.onend = () => { if (rec.current === r) { rec.current = null; setLyssnar(false) } }
     try {
       r.start()
       rec.current = r
+      senast.current = Date.now()
       setLyssnar(true)
       onFel(null)
     } catch {
@@ -68,7 +88,13 @@ export function Diktera({ text, onText, onFel, disabled, avbryt }: Props) {
   }
 
   function stop() {
-    rec.current?.stop()
+    // stop() lets the last words arrive; the button is free right away.
+    const r = rec.current
+    if (!r) { setLyssnar(false); return }
+    rec.current = null
+    setLyssnar(false)
+    r.onend = null
+    try { r.stop() } catch { /* already stopped */ }
   }
 
   return (

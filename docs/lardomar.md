@@ -218,3 +218,8 @@ Format:
 **Orsak:** Tre fel i agentens bygge. (1) Masken täckte bara det som togs bort. Ytan där bordet skulle stå fanns inte med, så bara bitar av bordet syntes. Vännen försökte med "rug area in front of sofa", men SAM hittar föremål, inte ytor. (2) Nytt försök med sista ordet gjorde frasen till "sofa", så soffan ritades om. (3) Bildmodellen fick aldrig bordsbilden, bara vännens beskrivning.
 **Åtgärd:** Verktyget har `platser` (rutor för det nya) och `forlagor` (bilder som förlaga). Sista ordet används bara för korta föremålsnamn. Nano Banana i 2K. Prompt 0.2.7. Röktestet ber om ett bord från en förlaga.
 **Regel:** Pröva varje ny bildfunktion med användarens typiska begäran (ta bort, lägga till, byta) innan hon får den. Röktestet ska innehålla en begäran av varje slag.
+### 2026-09-29 · Vännen verkade hänga sig och dikteringen slutade svara
+**Hände:** Testanvändaren upplevde att vännen inte svarade, och vid ett tillfälle gick mikrofonknappen inte att använda. Loggen visade att alla hennes meddelanden fått svar på servern inom 3 till 6 s.
+**Orsak:** Appen förlitade sig på den strömmade anslutningen. Bröts den, till exempel när appen gick i bakgrunden, eller var svaret bara en skissbeställning utan text, stod "Tänker…" kvar. iPhone rapporterar inte alltid att taligenkänningen slutat, så knappen fastnade i läget "lyssnar".
+**Åtgärd:** Appen läser samtalet och skisserna från servern efter varje svar, när den blir synlig igen och när ett svar tystnat i 45 s. Dikteringen återställs direkt vid stopp och skicka, och efter en minut utan ord.
+**Regel:** Servern är sanningen. Allt som strömmas till telefonen ska gå att hämta igen från databasen.

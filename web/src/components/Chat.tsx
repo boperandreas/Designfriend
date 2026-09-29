@@ -24,6 +24,8 @@ export function Chat({ projektId }: { projektId: string }) {
   const [avbryt, setAvbryt] = useState(0)
   const [laggTill, setLaggTill] = useState(false)
   const slut = useRef<HTMLDivElement>(null)
+  const senasteBit = useRef(0)
+  const avbrytSvar = useRef<AbortController | null>(null)
   const rumInput = useRef<HTMLInputElement>(null)
   const moodInput = useRef<HTMLInputElement>(null)
 
@@ -54,6 +56,42 @@ export function Chat({ projektId }: { projektId: string }) {
     })
     return () => { aktiv = false }
   }, [projektId])
+
+  // The server saves every reply, even if the phone lost the stream (the app
+  // went to the background, the screen locked, the network dropped). Reading
+  // the conversation back from the server makes the app catch up instead of
+  // showing "Tänker…" forever.
+  async function synka(): Promise<Meddelande[] | null> {
+    const [m, sk] = await Promise.all([
+      supabase.from('meddelande').select('id,roll,text,bilder,skapad').eq('projekt_id', projektId)
+        .order('skapad', { ascending: true }).limit(300),
+      supabase.from('skiss').select(SKISS_FALT).eq('projekt_id', projektId).order('skapad', { ascending: true }),
+    ])
+    if (m.error || !m.data) return null
+    setMeddelanden(m.data as Meddelande[])
+    if (sk.data) setSkisser(sk.data as Skiss[])
+    return m.data as Meddelande[]
+  }
+
+  // Back in the app: catch up, and give up on a stream that has gone quiet.
+  useEffect(() => {
+    const synlig = () => {
+      if (document.visibilityState !== 'visible') return
+      if (avbrytSvar.current && Date.now() - senasteBit.current > 8000) avbrytSvar.current.abort()
+      else if (!avbrytSvar.current) synka()
+    }
+    document.addEventListener('visibilitychange', synlig)
+    return () => document.removeEventListener('visibilitychange', synlig)
+  })
+
+  // A reply that stops arriving for 45 seconds is treated as lost.
+  useEffect(() => {
+    if (!svarar) return
+    const t = setInterval(() => {
+      if (Date.now() - senasteBit.current > 45000) avbrytSvar.current?.abort()
+    }, 5000)
+    return () => clearInterval(t)
+  }, [svarar])
 
   // Sketches arrive in the background: Realtime, plus polling while one is on
   // its way, since a phone may drop the socket when the app is in the background.
@@ -129,20 +167,34 @@ export function Chat({ projektId }: { projektId: string }) {
     setSvarar(true)
     const nu = new Date().toISOString()
     setMeddelanden((m) => [...m, { roll: 'user', text: t || '(bilder)', bilder: ids, skapad: nu }, { roll: 'assistant', text: '', bilder: [], skapad: nu }])
+    const kontroll = new AbortController()
+    avbrytSvar.current = kontroll
+    senasteBit.current = Date.now()
     try {
       await sendMessage(projektId, t, ids, (full) => {
+        senasteBit.current = Date.now()
         setMeddelanden((m) => {
           const kopia = m.slice()
           kopia[kopia.length - 1] = { ...kopia[kopia.length - 1], text: full }
           return kopia
         })
-      })
+      }, kontroll.signal)
     } catch (err) {
-      setFel(err instanceof Error ? err.message : 'Något gick fel. Försök igen.')
-      setMeddelanden((m) => (m[m.length - 1]?.text ? m : m.slice(0, -1)))
+      // The reply may still have been saved on the server. Only show an error
+      // if the conversation there ends without one.
+      const server = await synka().catch(() => null)
+      const sista = server?.[server.length - 1]
+      if (!server || sista?.roll !== 'assistant' || new Date(sista.skapad ?? 0).getTime() < new Date(nu).getTime() - 5000) {
+        setFel(kontroll.signal.aborted ? 'Svaret kom inte fram. Försök igen.'
+          : err instanceof Error ? err.message : 'Något gick fel. Försök igen.')
+        if (!server) setMeddelanden((m) => (m[m.length - 1]?.text ? m : m.slice(0, -1)))
+      }
     } finally {
+      avbrytSvar.current = null
       setSvarar(false)
     }
+    // Always end in step with the server: the saved reply, the sketch row.
+    await synka().catch(() => null)
   }
 
   const tomt = !laddar && meddelanden.length === 0

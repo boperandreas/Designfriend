@@ -6,6 +6,7 @@ export async function sendMessage(
   text: string,
   bildIds: string[],
   onText: (full: string) => void,
+  signal?: AbortSignal,
 ): Promise<string> {
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token
@@ -19,6 +20,7 @@ export async function sendMessage(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ projekt_id: projektId, text, bild_ids: bildIds }),
+    signal,
   })
 
   if (!res.ok || !res.body) {

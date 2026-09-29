@@ -42,7 +42,7 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 - [x] Projektminne och Var vi är, flera rum, radera konto
 - [x] Driftsättning via GitHub Actions och Vercel
 - [x] Mikrofonknapp för diktering på svenska
-- [ ] Diktering provad på iPhone, både i Safari och som app på hemskärmen
+- [ ] Diktering provad på iPhone, både i Safari och som app på hemskärmen (återställs nu direkt, 2026-09-29, inte provat på iPhone)
 - [x] Svarstid mätt (första ordet 2 till 5 s med effort low)
 - [ ] Tak per användare och dag (steg 3 ovan)
 
