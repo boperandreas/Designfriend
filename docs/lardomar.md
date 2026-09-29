@@ -147,3 +147,8 @@ Format:
 **Orsak:** Prompten från etapp 0 sa "säg att den i appen kommer som en bild". I appen finns ingen bildredigering än, så beskedet blev otydligt.
 **Åtgärd:** Prompt 0.1.2: säg i första meningen att fotot inte kan ändras än, beskriv kort, lova ingen tidpunkt. Testfall 002.
 **Regel:** När appen byter miljö eller funktioner, läs prompten efter löften om sådant som inte finns.
+
+### 2026-09-28 · Bildtjänster sparar bilder öppet om man inte säger annat
+**Hände:** fal.ai:s standard är att genererade filer ligger kvar för alltid och kan läsas av alla som har adressen.
+**Åtgärd:** Varje anrop skickar huvuden för radering efter tio minuter och för att inte spara anropen. Resultatet kopieras till vår egen lagring.
+**Regel:** Läs lagringsvillkoren för varje ny extern tjänst som får användarnas foton, och skriv in valet i `docs/beslut.md`.

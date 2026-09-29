@@ -62,3 +62,16 @@ Format:
 **Varför:** Standardnivån `high` gav 6 till 23 sekunder till första ordet. I ett samtal som ska kännas som en vän väger svarstiden tungt, och de flesta turer är enkla.
 **Följder:** Modellen kan hoppa över tänkandet på enkla frågor och tänker kort på svåra. Om resonemangen blir sämre prövas `medium`. Ändras med hemligheten `ANTHROPIC_EFFORT` utan ny kod.
 **Alternativ som valdes bort:** Stänga av tänkandet helt (sämre resonemang), byta till en snabbare modell (Claude ska resonera, och Sonnet ger bättre råd).
+
+### 2026-09-28 · Idéskisser före bildtestet, via fal.ai
+**Varför:** Testanvändaren bad första kvällen om att få möbler borttagna ur fotot. Utvecklaren bestämde att bildredigeringen tas nu, före bildtestet i etapp 0. fal.ai har alla tre bildmodellerna från designen (Nano Banana 2, gpt-image-2, FLUX.2 pro edit) och SAM 3 bakom en nyckel. Då kan modellerna jämföras i appen genom att byta hemligheten `FAL_MODELL`, utan tre konton.
+**Följder:** Standard är Nano Banana 2, snabb och bra på att ta bort föremål. Bildtestet görs i stället i appen med verkliga rum. Foton skickas till fal i USA som tidsbegränsade adresser. fal behåller annars filer för alltid och öppet, så varje anrop ber om radering efter tio minuter och att anropen inte sparas (`X-Fal-Object-Lifecycle-Preference`, `X-Fal-Store-IO`). Resultatet kopieras genast till vår lagring i EU och raderas med kontot.
+**Alternativ som valdes bort:** Ett konto per modelltillverkare (tre nycklar, tre saldon). Black Forest Labs EU-slutpunkt (bara FLUX, ingen SAM).
+
+### 2026-09-28 · Vännen beställer skisser med ett verktyg, masker från SAM 3 via text
+**Varför:** Användaren ber om ändringar i vanliga ord ("ta bort fåtöljen"). Claude översätter det till en instruktion och till de områden som får ändras ("dark armchair", "footstool"). SAM 3 hittar områdena från texten, så ingen markering med fingret behövs i första versionen.
+**Följder:** Markering genom tryck (Behåll, Byt, Ta bort) kommer senare och använder samma masker. Claude ser inte själva skissen, bara att den är gjord.
+
+### 2026-09-28 · Originalets pixlar läggs tillbaka i appen, inte i serverfunktionen
+**Varför:** Bildmodellen ritar om hela fotot. Regel 7 kräver att det som inte ändras är oförändrat. Att avkoda och blanda ett foto på 2000 px i en Edge Function riskerar gratisnivåns gräns för processortid. Telefonens canvas gör det på en bråkdel av en sekund.
+**Följder:** Masken växer med 1,5 procent av bildens bredd (skuggor och kanter följer med) och mjukas ut. Utanför den är varje pixel originalets. Skissen sparas omonterad; den monteras varje gång den visas. Hittar SAM inget område visas bildmodellens bild som den är.

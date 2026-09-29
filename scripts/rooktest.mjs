@@ -6,6 +6,7 @@
 // Env: TEST_EMAIL, TEST_PASSWORD (a dedicated test user, never a real one)
 //      SUPABASE_URL, SUPABASE_KEY (optional, defaults to web/.env.production)
 //      MESSAGES (optional, number of messages, default 3)
+//      SKISS (optional, "0" skips the sketch step at the end)
 import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
@@ -56,6 +57,7 @@ if (!projekt) {
 // not answered as repeats. The photo is kept, so it is not re-uploaded.
 await must(await fetch(`${URL_}/rest/v1/meddelande?projekt_id=eq.${projekt.id}`, { method: "DELETE", headers: h }), "clear messages");
 await must(await fetch(`${URL_}/rest/v1/projektminne?projekt_id=eq.${projekt.id}`, { method: "DELETE", headers: h }), "clear memory");
+await must(await fetch(`${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}`, { method: "DELETE", headers: h }), "clear sketches");
 
 // Synthetic room photo, uploaded once.
 const bilder = await (await must(await fetch(`${URL_}/rest/v1/bild?projekt_id=eq.${projekt.id}&select=id`, { headers: h }), "list photos")).json();
@@ -77,8 +79,11 @@ if (!bilder.length) {
 
 console.log(`Room ${projekt.id}, sending ${N} messages`);
 const rows = [];
-for (let i = 0; i < N; i++) {
-  const text = MEDDELANDEN[i % MEDDELANDEN.length];
+const skissSteg = process.env.SKISS !== "0";
+const texter = Array.from({ length: N }, (_, i) => MEDDELANDEN[i % MEDDELANDEN.length]);
+if (skissSteg) texter.push("Kan du visa hur rummet ser ut utan den grå fåtöljen?");
+for (let i = 0; i < texter.length; i++) {
+  const text = texter[i];
   const t0 = performance.now();
   const res = await must(await fetch(`${URL_}/functions/v1/chat`, {
     method: "POST",
@@ -98,3 +103,23 @@ for (let i = 0; i < N; i++) {
   rows.push({ message: i + 1, first_byte_ms: Math.round(first ?? total), total_ms: Math.round(total), reply_bytes: bytes });
 }
 console.table(rows);
+
+// The last message asks for a sketch. Wait for the background job.
+if (skissSteg) {
+  const t0 = performance.now();
+  let rad = null;
+  while (performance.now() - t0 < 180_000) {
+    rad = (await (await must(await fetch(
+      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&select=status,ms,modell,masker,fel,beskrivning`, { headers: h },
+    ), "read sketch")).json())[0] ?? null;
+    if (rad && (rad.status === "klar" || rad.status === "fel")) break;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  if (!rad) {
+    console.log("Sketch: the advisor did not ask for one (or sketches are off: FAL_KEY missing).");
+  } else {
+    console.table([{ status: rad.status, beskrivning: rad.beskrivning, modell: rad.modell, masker: rad.masker?.length ?? 0,
+      ms: rad.ms, vantat_ms: Math.round(performance.now() - t0), fel: rad.fel ?? "" }]);
+    if (rad.status !== "klar") process.exitCode = 1;
+  }
+}

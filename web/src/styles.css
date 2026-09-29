@@ -111,3 +111,12 @@ button:disabled { opacity: .5; cursor: default; }
 .sheet section { display: grid; gap: 6px; }
 .sheet h3 { margin: 0; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .sheet ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; }
+
+/* Idea sketches */
+.skiss { align-self: stretch; margin: 0; display: grid; gap: 6px; }
+.skiss.vantar { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 14px 16px; }
+.skiss-bild { position: relative; padding: 0; border: 0; background: none; display: block; width: 100%; }
+.skiss-bild img { width: 100%; height: auto; border-radius: 14px; display: block; }
+.skiss-etikett { position: absolute; top: 8px; left: 8px; background: rgba(0, 0, 0, .55); color: #fff;
+  font-size: .8rem; padding: 2px 10px; border-radius: 999px; }
+.skiss figcaption { font-size: .92rem; }

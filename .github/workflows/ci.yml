@@ -34,5 +34,5 @@ jobs:
       - name: Edge function checks and tests
         working-directory: supabase/functions
         run: |
-          deno check chat/index.ts radera-konto/index.ts
-          deno test chat/lib.test.ts
+          deno check chat/index.ts radera-konto/index.ts skiss/index.ts
+          deno test chat/lib.test.ts skiss/lib.test.ts

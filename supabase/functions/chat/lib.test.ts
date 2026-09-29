@@ -1,5 +1,5 @@
 import { deepStrictEqual as assertEquals, ok as assert } from "node:assert";
-import { alternate, buildContext, buildSystem, markHistoryCache, relativeTime } from "./lib.ts";
+import { alternate, buildContext, buildSystem, markHistoryCache, relativeTime, sourcePhoto } from "./lib.ts";
 
 Deno.test("alternate merges consecutive same-role text and starts with user", () => {
   const out = alternate([
@@ -50,4 +50,24 @@ Deno.test("markHistoryCache marks the last assistant turn before the new message
   assertEquals(out[3].content, [{ type: "text", text: "d", cache_control: { type: "ephemeral", ttl: "1h" } }]);
   assertEquals(out[1].content, "b");
   assertEquals(out[4].content, "e");
+});
+
+Deno.test("sourcePhoto picks the numbered room photo or the latest one", () => {
+  const bilder = [{ id: "a", typ: "rum" }, { id: "b", typ: "moodboard" }, { id: "c", typ: "rum" }];
+  assertEquals(sourcePhoto(bilder, 1)?.id, "a");
+  assertEquals(sourcePhoto(bilder, 2)?.id, "c");
+  assertEquals(sourcePhoto(bilder, 9)?.id, "c");
+  assertEquals(sourcePhoto([{ id: "m", typ: "moodboard" }], 1), undefined);
+});
+
+Deno.test("buildContext lists recent sketches", () => {
+  const now = new Date("2026-09-28T10:00:00Z");
+  const text = buildContext({}, null, now, [{ beskrivning: "Utan fåtöljen", status: "klar", skapad: "2026-09-28T09:58:00Z" }]);
+  assert(text.includes("Utan fåtöljen (klar och visad"));
+});
+
+Deno.test("buildSystem is static and mentions sketches only when on", () => {
+  assertEquals(buildSystem(true), buildSystem(true));
+  assert(buildSystem(true).endsWith("kan du göra idéskisser med verktyget gor_skiss."));
+  assert(buildSystem(false).endsWith("Beskriv idéskisser i ord."));
 });

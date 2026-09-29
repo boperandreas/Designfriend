@@ -21,13 +21,15 @@
 //   ANTHROPIC_EFFORT   optional, default "low": how much the model thinks before
 //                      answering (low, medium, high, xhigh, max). Sonnet 5 thinks at
 //                      "high" by default, which delays the first word by many seconds.
+//   FAL_KEY            optional: turns on idea sketches (the gor_skiss tool). The
+//                      sketch itself is made by the "skiss" function.
 
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { ANTHROPIC_API, anthropicHeaders, uploadFile } from "../_shared/anthropic.ts";
 import {
-  alternate, buildContext, buildSystem, CACHE, markHistoryCache,
-  type ApiMessage, type Block, type Roll,
+  alternate, buildContext, buildSystem, CACHE, markHistoryCache, SKISS_TOOL, sourcePhoto,
+  type ApiMessage, type Block, type Roll, type SkissRad,
 } from "./lib.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
@@ -38,7 +40,8 @@ const WEB_SEARCH_TOOL = Deno.env.get("WEB_SEARCH_TOOL") ?? "web_search_20250305"
 const EFFORT = Deno.env.get("ANTHROPIC_EFFORT") ?? "low";
 const HISTORY_LIMIT = 40;
 const IMAGE_LIMIT = 16;
-const SYSTEM = buildSystem();
+const SKISSER = Boolean(Deno.env.get("FAL_KEY"));
+const SYSTEM = buildSystem(SKISSER);
 
 interface Meddelande { roll: Roll; text: string; bilder: string[]; skapad: string }
 interface Bild {
@@ -177,7 +180,7 @@ Deno.serve(async (req) => {
   });
 
   // Everything we need, in parallel. RLS limits every query to the caller.
-  const [userRes, projektRes, historikRes, bilderRes, minneRes] = await Promise.all([
+  const [userRes, projektRes, historikRes, bilderRes, minneRes, skissRes] = await Promise.all([
     sb.auth.getUser(authHeader.replace(/^Bearer /i, "")),
     sb.from("projekt").select("id").eq("id", projektId).maybeSingle(),
     sb.from("meddelande").select("roll,text,bilder,skapad").eq("projekt_id", projektId)
@@ -185,6 +188,8 @@ Deno.serve(async (req) => {
     sb.from("bild").select("id,typ,sokvag,favorit,kommentar,anthropic_file_id").eq("projekt_id", projektId)
       .order("skapad", { ascending: true }).limit(IMAGE_LIMIT),
     sb.from("projektminne").select("innehall").eq("projekt_id", projektId).maybeSingle(),
+    sb.from("skiss").select("beskrivning,status,skapad").eq("projekt_id", projektId)
+      .order("skapad", { ascending: false }).limit(5),
   ]);
   timing.db_ms = ms();
   if (userRes.error || !userRes.data.user) return json(401, { error: "Inloggningen har gått ut. Logga in igen." });
@@ -216,7 +221,8 @@ Deno.serve(async (req) => {
       ? `${m.text}\n[Bifogade: bild ${m.bilder.map((id) => nummer.get(id)).filter(Boolean).join(", ")}]`
       : m.text,
   }));
-  historyMsgs.push({ role: "user", content: `${buildContext(minne, lastAt)}\n\n${userText}` });
+  const skisser = (skissRes.data ?? []) as SkissRad[];
+  historyMsgs.push({ role: "user", content: `${buildContext(minne, lastAt, new Date(), skisser)}\n\n${userText}` });
 
   const bildBlock = imageBlocks(bildLista);
   const prefix: ApiMessage[] = bildBlock.length
@@ -233,14 +239,18 @@ Deno.serve(async (req) => {
     system: [{ type: "text", text: SYSTEM, cache_control: CACHE }],
     messages,
   };
-  const tools = WEB_SEARCH_TOOL === "off" ? undefined : [{
-    type: WEB_SEARCH_TOOL,
-    name: "web_search",
-    max_uses: 3,
-    user_location: { type: "approximate", country: "SE", timezone: "Europe/Stockholm" },
-  }];
+  const tools: Block[] = [];
+  if (SKISSER) tools.push(SKISS_TOOL);
+  if (WEB_SEARCH_TOOL !== "off") {
+    tools.push({
+      type: WEB_SEARCH_TOOL,
+      name: "web_search",
+      max_uses: 3,
+      user_location: { type: "approximate", country: "SE", timezone: "Europe/Stockholm" },
+    });
+  }
 
-  let res = await callClaude(tools ? { ...baseBody, tools } : baseBody, apiKey);
+  let res = await callClaude(tools.length ? { ...baseBody, tools } : baseBody, apiKey);
   if (!res.ok && res.status === 400) {
     // Fall back to the plainest request that has worked before, so a rejected
     // option (tool version, effort level) never takes the whole app down.
@@ -262,6 +272,7 @@ Deno.serve(async (req) => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   let svar = "";
+  let verktygJson: string | null = null;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -292,6 +303,11 @@ Deno.serve(async (req) => {
               if (timing.first_token_ms === undefined) timing.first_token_ms = ms();
               svar += data.delta.text;
               controller.enqueue(encoder.encode(data.delta.text));
+            } else if (data.type === "content_block_start" && data.content_block?.type === "tool_use"
+              && data.content_block?.name === SKISS_TOOL.name) {
+              verktygJson = "";
+            } else if (data.type === "content_block_delta" && data.delta?.type === "input_json_delta" && verktygJson !== null) {
+              verktygJson += data.delta.partial_json ?? "";
             } else if (data.type === "content_block_start" && data.content_block?.type === "server_tool_use") {
               timing.web_searches = ((timing.web_searches as number) ?? 0) + 1;
             } else if (data.type === "content_block_start" && data.content_block?.type === "text" && svar && !svar.endsWith("\n")) {
@@ -313,15 +329,50 @@ Deno.serve(async (req) => {
       }
 
       timing.total_ms = ms();
+
+      // The advisor may have asked for a sketch. The reply is saved first so the
+      // sketch sorts after it in the conversation.
+      let skiss: Block | null = null;
+      if (verktygJson !== null) {
+        timing.skiss = true;
+        try {
+          skiss = JSON.parse(verktygJson || "{}");
+        } catch {
+          console.error("gor_skiss: invalid input JSON");
+        }
+      }
+      const kalla = skiss ? sourcePhoto(bildLista, skiss.bild) : undefined;
+      const skissOk = Boolean(skiss && kalla && typeof skiss.instruktion === "string");
+      if (skiss && !skissOk) console.error("gor_skiss: no room photo or instruction", skiss.bild);
+      const beskrivning = String(skiss?.beskrivning ?? "Idéskiss").slice(0, 200);
       console.log(JSON.stringify({ event: "chat_timing", model: MODEL, effort: EFFORT, ...timing }));
 
-      const slutsvar = svar.trim();
+      const slutsvar = [svar.trim(), skissOk ? `[Skiss beställd: ${beskrivning}]` : ""].filter(Boolean).join("\n\n");
       if (slutsvar) {
         const { error } = await sb.from("meddelande").insert({ projekt_id: projektId, roll: "assistant", text: slutsvar });
         if (error) console.error("could not save reply", error.message);
         const senaste = [...tidigare.slice(-8).map((m) => ({ roll: m.roll, text: m.text })),
           { roll: "user" as Roll, text: userText }, { roll: "assistant" as Roll, text: slutsvar }];
         EdgeRuntime.waitUntil(updateMemory(sb, projektId, minne, senaste, apiKey));
+      }
+
+      if (skiss && kalla && skissOk) {
+        const { data: rad, error } = await sb.from("skiss").insert({
+          projekt_id: projektId, kalla_bild_id: kalla.id, beskrivning,
+          instruktion: String(skiss.instruktion).slice(0, 2000),
+          omraden: Array.isArray(skiss.omraden) ? skiss.omraden.map(String) : [],
+        }).select("id").single();
+        if (error || !rad) {
+          console.error("could not create sketch", error?.message);
+        } else {
+          EdgeRuntime.waitUntil(fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/skiss`, {
+            method: "POST",
+            headers: { Authorization: authHeader, apikey: publicKey, "Content-Type": "application/json" },
+            body: JSON.stringify({ skiss_id: rad.id }),
+          }).then(async (r) => {
+            if (r.status !== 202) console.error("skiss start failed", r.status, await r.text());
+          }).catch((e) => console.error("skiss start failed", e)));
+        }
       }
       controller.close();
     },

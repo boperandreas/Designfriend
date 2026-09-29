@@ -297,8 +297,8 @@ flowchart LR
 | Webbapp | React och TypeScript som PWA på Vercel |
 | Backend | Supabase i EU: databas, inloggning, lagring, serverfunktioner, Realtime |
 | Rådgivaren | Claude med verktyg: tolka foto, markera föremål, göra idéskiss, söka produkt, webbsöka pris, föreslå åtgärd, skapa öppen fråga, uppdatera minne, ställa följdfråga. Varje sakuppgift märks: källa, uppskattning eller okänd |
-| Bild | Testa gpt-image-2, Nano Banana 2, FLUX.2 pro edit i etapp 0. Färgtrohet prioriteras |
-| Föremål | Claude för namn, SAM för konturer |
+| Bild | gpt-image-2, Nano Banana 2 och FLUX.2 pro edit via fal.ai, valbar med `FAL_MODELL`. Standard Nano Banana 2. Jämförs i appen. Färgtrohet prioriteras |
+| Föremål | Claude för namn, SAM 3 för konturer (från text i första versionen, tryck senare) |
 | Produkter | Egen JSON-katalog, sedan affiliate-produktflöden |
 
 **Datamodell:** `projekt` → `rum` → `föremål` → `moodboard_bild` → `stilprofil` → `förslag` → `planrad` (produkt, åtgärd, bygge eller tjänst). `meddelande` med pgvector, `projektminne`, `beslut`, `spår`. På användarnivå: `preferens_signal`, `smakprofil`, `mina_möbler`, `arbetssätt`. Dessutom `idé`, `ändringsförslag` och `produkt`.
@@ -346,7 +346,7 @@ Se `evals/kriterier.md`.
 
 ## 18. Öppna beslut
 
-- **Bildmodell:** avgörs i etapp 0.
+- **Bildmodell:** Nano Banana 2 som start (2026-09-28). Avgörs efter jämförelse i appen.
 - **Mått:** manuellt, gärna med iPhones Mätverktyg.
 - **Katalog:** IKEA och Lanna Möbler plus en kedja, begagnat som tips.
 - **Namn och domän:** före etapp 4.

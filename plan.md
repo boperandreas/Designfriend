@@ -4,7 +4,7 @@ Var vi står och vad som är nästa steg. **Läs den här filen först i varje n
 
 Designen och skälen finns i `docs/design.md` och `docs/beslut.md`. Den här filen handlar bara om ordning och status.
 
-Senast uppdaterad: 2026-09-27
+Senast uppdaterad: 2026-09-28
 
 ---
 
@@ -13,8 +13,11 @@ Senast uppdaterad: 2026-09-27
 - **Etapp 1a är i drift.** Webbappen ligger på Vercel och serverfunktionerna i Supabase (EU, Irland). Två användare: utvecklaren och första testanvändaren. Inloggning med e-post och lösenord.
 - **Snabbare svar i drift sedan 2026-09-27 18:35:** cachebar prompt, foton via Files API, tidsmätning (`chat_timing`). Första versionen tog 26 s för ett helt svar. Nya versionen inte mätt ännu.
 - **Agenten läser loggar själv** via Supabase-connectorn, se `AGENTS.md`.
+- **Idéskisser byggda (2026-09-28), väntar på `FAL_KEY`.** Utvecklaren tog bildredigeringen före resten efter testanvändarens första kväll. Vännen beställer en skiss med verktyget `gor_skiss`, SAM 3 och Nano Banana 2 via fal.ai gör den, appen lägger tillbaka originalets pixlar utanför masken.
 
 ## Nästa steg, i ordning
+
+0. **Slå på skisserna.** Utvecklaren skapar konto och nyckel hos fal.ai och lägger `FAL_KEY` i Supabase (`docs/driftsattning.md`, steg 3b). Agenten kör röktestet, som nu slutar med en skissbeställning, och läser `skiss_timing`. Sedan provar testanvändaren med fåtöljen och pallen.
 
 1. **Svarstiden är mätt (2026-09-27, röktestet).** Effort high: första ordet efter 22,7 s, 9,2 s och 6,4 s. Effort low: 4,6 s, 1,9 s och 4,9 s, svar på cirka 150 tokens i stället för 1 668. Kvar är variation i Anthropics svarstid (1,5 till 4,7 s till första byte) och 0,2 till 0,6 s i databasen. Kör röktestet efter varje ändring som kan påverka tiden.
 2. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.
@@ -44,8 +47,10 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 - [ ] Tak per användare och dag (steg 4 ovan)
 
 ### Etapp 1b · Idéskisser i Utforska-läget
-- [ ] Bildmodell anropad från Edge Function som bakgrundsjobb, resultat via Realtime
-- [ ] Markering av föremål: Behåll, Byt, Ta bort, med SAM-mask och återställning av originalets pixlar
+- [x] Bildmodell anropad från Edge Function som bakgrundsjobb, resultat via Realtime (byggt, inte provat i drift)
+- [x] SAM-mask från text och återställning av originalets pixlar utanför masken
+- [ ] Jämföra Nano Banana 2, gpt-image-2 och FLUX.2 pro edit på verkliga rum (ersätter bildtestet i etapp 0)
+- [ ] Markering av föremål genom tryck: Behåll, Byt, Ta bort
 - [ ] Töm rummet
 - [ ] Gilla och ogilla delar av en skiss, spår och versioner, jämför sida vid sida
 - [ ] Palett med NCS- och hex-koder, uppskattade koder märkta
@@ -83,6 +88,8 @@ Saker som saknas eller är tillfälliga i nuvarande version. Flytta upp till Nä
 - Var vi är går inte att läsa utan uppkoppling.
 - Supabases gratisprojekt pausas efter en tids inaktivitet.
 - Testsviten körs för hand.
+- Vännen ser inte skisserna den beställt, bara att de finns. Den kan inte kommentera detaljer i dem.
+- Skisser sparas omonterade och monteras i telefonen varje gång de visas. Går inte att dela eller spara som färdig bild än.
 - Webbsökningens verktygsversion (`web_search_20250305`) är den äldsta som stöds. Nyare versioner finns.
 
 ## Så börjar en ny session

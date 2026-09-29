@@ -421,3 +421,6 @@ verify_jwt = false
 
 [functions.radera-konto]
 verify_jwt = false
+
+[functions.skiss]
+verify_jwt = false
