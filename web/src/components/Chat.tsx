@@ -153,6 +153,7 @@ export function Chat({ projektId }: { projektId: string }) {
         {tomt && (
           <div className="intro">
             <p><strong>Börja med ett foto av rummet.</strong> Lägg gärna till några bilder du gillar, och skriv med egna ord vad du vill ändra eller hur det ska kännas.</p>
+            <p className="muted small">Vill du se en ändring kan du be om en skiss, till exempel ”visa rummet utan fåtöljen” eller ”visa en mörkgrön vägg bakom soffan”.</p>
           </div>
         )}
         {flode.map(({ m, s, i }) => {
@@ -198,7 +199,7 @@ export function Chat({ projektId }: { projektId: string }) {
         <div className="input-row">
           <label htmlFor="meddelande" className="sr-only">Meddelande</label>
           <textarea
-            id="meddelande" rows={1} placeholder="Skriv till vännen…" value={text}
+            id="meddelande" rows={1} placeholder={meddelanden.length ? 'Skriv, eller be om en skiss…' : 'Skriv till vännen…'} value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer: fine)').matches) { e.preventDefault(); skicka() } }}
           />

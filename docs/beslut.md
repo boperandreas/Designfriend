@@ -75,3 +75,8 @@ Format:
 ### 2026-09-28 · Originalets pixlar läggs tillbaka i appen, inte i serverfunktionen
 **Varför:** Bildmodellen ritar om hela fotot. Regel 7 kräver att det som inte ändras är oförändrat. Att avkoda och blanda ett foto på 2000 px i en Edge Function riskerar gratisnivåns gräns för processortid. Telefonens canvas gör det på en bråkdel av en sekund.
 **Följder:** Masken växer med 1,5 procent av bildens bredd (skuggor och kanter följer med) och mjukas ut. Utanför den är varje pixel originalets. Skissen sparas omonterad; den monteras varje gång den visas. Hittar SAM inget område visas bildmodellens bild som den är.
+
+### 2026-09-29 · Vännen erbjuder inte skisser, appen visar att de finns
+**Varför:** Regeln "erbjud en gång" bröts i hälften av röktesterna och blev tjat. Att be om en skiss är lätt när man vet att det går.
+**Följder:** Introtexten och skrivfältets ledtext nämner skisser. Vännen gör skiss bara på begäran.
+**Alternativ som valdes bort:** Kod som känner igen erbjudanden i tidigare svar (bryter mot regel 3), fler skärpningar av samma promptregel.
