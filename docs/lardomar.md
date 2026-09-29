@@ -223,3 +223,8 @@ Format:
 **Orsak:** Appen förlitade sig på den strömmade anslutningen. Bröts den, till exempel när appen gick i bakgrunden, eller var svaret bara en skissbeställning utan text, stod "Tänker…" kvar. iPhone rapporterar inte alltid att taligenkänningen slutat, så knappen fastnade i läget "lyssnar".
 **Åtgärd:** Appen läser samtalet och skisserna från servern efter varje svar, när den blir synlig igen och när ett svar tystnat i 45 s. Dikteringen återställs direkt vid stopp och skicka, och efter en minut utan ord.
 **Regel:** Servern är sanningen. Allt som strömmas till telefonen ska gå att hämta igen från databasen.
+
+### 2026-09-29 · Verktygets beskrivning styrde mer än prompten
+**Hände:** Med en bordsbild i moodboarden erbjöd vännen skiss och gjorde sedan en som ingen bett om, trots promptens "gör en skiss bara när hon ber om det". Verktygsbeskrivningen sa bara vad verktyget gör.
+**Åtgärd:** Villkoret står nu också i beskrivningen av `gor_skiss`, med exempel på vad som räknas som en begäran. Prompt 0.2.8 säger att information, som att soffan ska vara kvar, inte är en begäran.
+**Regel:** När ett verktyg bara får användas under vissa villkor ska villkoret stå i verktygets egen beskrivning, inte bara i systemprompten.
