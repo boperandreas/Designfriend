@@ -54,6 +54,7 @@ Agenten har åtkomst till Supabase-projektet via Claude-connectorn (project id `
 - **Läs själv, be inte utvecklaren kopiera.** Loggar (`query_logs`, sök på `chat_timing`), funktioner, migreringar och rådgivare läses direkt.
 - **Läs aldrig användarnas samtal, foton eller projektminne** utan att utvecklaren uttryckligen ber om det. Tabellerna `meddelande`, `bild` och `projektminne` innehåller verkliga personers data. Räkna rader och läs tekniska fält vid behov, inte innehåll.
 - **Testa själv med röktestet.** Arbetsflödet `Röktest` loggar in som testanvändaren, laddar upp ett påhittat rumsfoto och skickar några meddelanden till appen i drift. Starta det genom att pusha till grenen `rooktest` (till exempel en tom commit), och läs sedan `chat_timing` via connectorn. Be inte utvecklaren skicka testmeddelanden.
+- **Efter en promptändring: kör röktestet minst två gånger och läs svaren i följd.** Röktestets testanvändare är påhittad, så dess samtal får läsas. Räkna ord i svaren, inte tokens i loggen. Ett fel som syns i en körning av två når användaren. Samla rättelser av samma slag i en pull request.
 - **Ändra inget via connectorn.** Migreringar och funktioner går via repot, pull request och GitHub Actions, så att utvecklaren granskar dem först. Undantag bara om utvecklaren ber om det.
 
 ## Dagsavslut

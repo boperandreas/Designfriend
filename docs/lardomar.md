@@ -194,3 +194,21 @@ Format:
 **Hände:** I ett röktest skrev vännen "om du vill behålla mattan" och behandlade i nästa svar mattan som en fast punkt, trots att testanvändaren aldrig sagt det.
 **Åtgärd:** Prompt 0.2.6: bara det hon sagt är bestämt. Regeln om "du i stället för ni" togs bort; utvecklaren anser att "ni" kan vara ett artigt du.
 **Regel:** Läs röktestets svar i följd, inte ett och ett. Fel i resonemanget syns först mellan svaren.
+
+### 2026-09-29 · Sju prompträttelser krävde sju sammanslagningar
+**Hände:** Varje promptändring kunde bara provas efter att utvecklaren slagit ihop den, eftersom röktestet går mot appen i drift. Det blev sju pull requests för prompten under en dag, och utvecklaren fick vänta på varje runda.
+**Orsak:** Ingen väg att köra prompten från en gren mot Claude före sammanslagning.
+**Åtgärd:** Föreslaget som steg 2 i `plan.md`: ett arbetsflöde med egen API-nyckel i GitHub som provar prompten i grenen.
+**Regel:** Samla alla rättelser av samma slag i en pull request, och bygg ett sätt att prova före sammanslagning när samma slags ändring återkommer.
+
+### 2026-09-29 · Utseendet var neutralt tills utvecklaren frågade
+**Hände:** Appen byggdes med ett kallt standardutseende för en chatt. Först när utvecklaren frågade om det passade testanvändaren, en grafisk formgivare med varm smak, gjordes ett eget utseende.
+**Regel:** Utforma gränssnittet för den som ska använda det från början. Ta skärmbilder av appen i telefonformat, ljust och mörkt, innan något visas för användaren.
+
+### 2026-09-29 · Grenar som byggde på varandra syntes som en pull request
+**Hände:** Agenten byggde `prompt-0.2.1` på `skiss-reservmask` och bad utvecklaren slå ihop dem i ordning. Utvecklaren såg bara den senare och slog ihop den; båda ändringarna kom med.
+**Regel:** Bygg helst varje gren från `main`. Bygger en gren på en annan, säg att det räcker att slå ihop den sista.
+
+### 2026-09-29 · pkill stängde agentens eget skal
+**Hände:** `pkill -f "vite preview"` i samma kommando som commit avbröt hela kommandot.
+**Regel:** Stoppa bakgrundsprocesser i ett eget kommando.

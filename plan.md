@@ -10,24 +10,22 @@ Senast uppdaterad: 2026-09-29
 
 ## Läget just nu
 
-- **Etapp 1a är i drift.** Webbappen ligger på Vercel och serverfunktionerna i Supabase (EU, Irland). Två användare: utvecklaren och första testanvändaren. Inloggning med e-post och lösenord.
-- **Snabbare svar i drift sedan 2026-09-27 18:35:** cachebar prompt, foton via Files API, tidsmätning (`chat_timing`). Första versionen tog 26 s för ett helt svar. Nya versionen inte mätt ännu.
-- **Agenten läser loggar själv** via Supabase-connectorn, se `AGENTS.md`.
-- **Idéskisser i drift sedan 2026-09-29.** Röktestet: vännen beställde en skiss med rätt område, klar på 12,6 s med Nano Banana 2. SAM hittade ingen mask i det påhittade fotot; reservmask från bildskillnad byggd. Inte provat på ett riktigt foto än.
-- **Idéskisser byggda (2026-09-28).** Utvecklaren tog bildredigeringen före resten efter testanvändarens första kväll. Vännen beställer en skiss med verktyget `gor_skiss`, SAM 3 och Nano Banana 2 via fal.ai gör den, appen lägger tillbaka originalets pixlar utanför masken.
+- **Etapp 1a är i drift.** Webbappen på Vercel, serverfunktionerna i Supabase (EU, Irland). Utvecklaren, testanvändaren och röktestets testanvändare. Inloggning med e-post och lösenord.
+- **Idéskisser i drift sedan 2026-09-29.** Vännen beställer en skiss med verktyget `gor_skiss` när användaren ber om det. SAM 3 och Nano Banana 2 via fal.ai gör den på 12 till 33 s. Appen lägger tillbaka originalets pixlar utanför masken. På röktestets fotorealistiska foto hittade SAM fåtöljen med 96 % säkerhet i alla körningar.
+- **Prompt 0.2.6.** Högst 60 ord och ett förslag per svar, ingen uppräkning av fotot, skiss bara på begäran, egna antaganden blir aldrig användarens beslut. Två röktester i rad: 33 till 55 ord, inga skisserbjudanden, inga påhittade beslut. Kvar: "Bra att veta" som inledning ibland.
+- **Nytt utseende, varmt papper.** Fraunces och Inter, cognac som accent, mörkt läge som mörk vägg. NCS-koder i svaren visas som ungefärliga färgprov. Utlagt 2026-09-29.
+- **Svarstid:** första ordet efter cirka 2 s, 5 till 8 s för första svaret i ett nytt samtal.
+- **Testanvändarens data är skild från utvecklarens.** Kontrollerat 2026-09-27: varje konto har egna rum, bilder och minne. "Bild 1 (samma som bild 13)" berodde på att hon laddade upp samma bilder två gånger; det är rättat i appen.
+- **Agenten läser loggar och testar själv** via Supabase-connectorn och röktestet, se `AGENTS.md`.
 
 ## Nästa steg, i ordning
 
-0. **Nytt utseende, varmt papper (2026-09-29).** Byggt och provat med skärmbilder i ljust och mörkt läge.
-   **Prova skisserna på ett riktigt foto.** Testanvändaren ber om fåtöljen och pallen. Agenten läser `skiss_timing` (masker och poäng per område) och ser om SAM hittar möblerna.
-
-1. **Svarstiden är mätt (2026-09-27, röktestet).** Effort high: första ordet efter 22,7 s, 9,2 s och 6,4 s. Effort low: 4,6 s, 1,9 s och 4,9 s, svar på cirka 150 tokens i stället för 1 668. Kvar är variation i Anthropics svarstid (1,5 till 4,7 s till första byte) och 0,2 till 0,6 s i databasen. Kör röktestet efter varje ändring som kan påverka tiden.
-2. **Testanvändaren börjar använda appen** med sitt vardagsrum och sin moodboard. Samla hennes reaktioner på tonen (H1–H3 i `evals/kriterier.md`) och eventuella idéer.
-3. **Prompt 0.1.2 är skriven** efter första kvällen: kortare första svar, ärligt besked om att foton inte kan ändras än, inga bildnummer. Kör röktestet och testfall 002 efter sammanslagning.
-   **Prompt v0.2.** Justera `prompts/radgivaren.md` efter reaktionerna. Granska mot `evals/kriterier.md` och testfall 001 innan sammanslagning.
-4. **Tak per användare och dag.** Spärr i `chat`-funktionen mot för många anrop, så att en loop eller ett fel inte tömmer saldot. Designen kräver det från start och det saknas i 1a.
-5. **Automatisk testsvit.** Skript som spelar upp `evals/fall/` mot prompten via API:et och låter en separat bedömarmodell gå igenom svaren mot kriterierna. Körs i CI när prompten ändras.
-6. **Bildtestet i etapp 0, och sedan etapp 1b.** Testanvändaren bad redan första kvällen om att få möbler borttagna ur fotot. Det talar för att ta etapp 1b (Ta bort, Töm rummet) direkt efter taket per dag. Tio rum, fem moodboards, tre bildmodeller (gpt-image-2, Nano Banana 2, FLUX.2 pro edit), tre rum med soffan behållen och bara mattan bytt. Färgtrohet väger tyngst. Resultatet väljer bildmodell och läggs i `docs/beslut.md`.
+1. **Testanvändaren provar igen.** Skisser på hennes riktiga foto (fåtöljen och pallen), det nya utseendet och NCS-proven. Agenten läser `skiss_timing` och `chat_timing`. Utvecklaren samlar hennes reaktioner (H1–H3 i `evals/kriterier.md`): känns det som en vän, hjälper skisserna, stämmer färgproven.
+2. **Prova prompten innan den slås ihop.** I dag krävde varje prompträttelse en sammanslagning, sju på en dag, eftersom röktestet bara går mot appen i drift. Förslag: `ANTHROPIC_API_KEY` som hemlighet i GitHub och ett arbetsflöde som spelar upp röktestets meddelanden och `evals/fall/` mot prompten i grenen, två gånger, och räknar ord, frågor och skisserbjudanden. En separat bedömarmodell kan läggas till sedan. Ersätter det gamla steget om automatisk testsvit.
+3. **Tak per användare och dag i `chat`.** Skisserna har redan ett tak (`SKISS_PER_DYGN`), samtalet saknar det.
+4. **Jämför bildmodellerna på riktiga rum.** Byt `FAL_MODELL` mellan Nano Banana 2, gpt-image-2 och FLUX.2 pro edit, samma begäran, färgtrohet väger tyngst. Resultatet i `docs/beslut.md`. Ersätter bildtestet i etapp 0.
+5. **Resten av etapp 1b** efter testanvändarens reaktioner: markering genom tryck (Behåll, Byt, Ta bort), Töm rummet, jämför skisser sida vid sida.
+6. **Prompt v0.3** efter testanvändarens reaktioner. Granska mot `evals/kriterier.md` och testfall 001 och 002.
 
 ## Etapper
 
@@ -36,7 +34,7 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 ### Etapp 0 · Bevisa kärnan
 - [x] Designdokument, systemprompt v0.1, testsvit med kriterier och testfall 001
 - [ ] Samtalstest med testanvändaren (görs i appen i stället för i ett Claude-projekt)
-- [ ] Bildtest och val av bildmodell (steg 6 ovan)
+- [ ] Bildtest och val av bildmodell (görs i appen, steg 4 ovan)
 
 ### Etapp 1a · Samtalet i webbappen
 - [x] Webbapp på hemskärmen, inloggning, chatt med strömmade svar
@@ -46,16 +44,17 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 - [x] Mikrofonknapp för diktering på svenska
 - [ ] Diktering provad på iPhone, både i Safari och som app på hemskärmen
 - [x] Svarstid mätt (första ordet 2 till 5 s med effort low)
-- [ ] Tak per användare och dag (steg 4 ovan)
+- [ ] Tak per användare och dag (steg 3 ovan)
 
 ### Etapp 1b · Idéskisser i Utforska-läget
-- [x] Bildmodell anropad från Edge Function som bakgrundsjobb, resultat via Realtime (byggt, inte provat i drift)
+- [x] Bildmodell anropad från Edge Function som bakgrundsjobb, resultat via Realtime (provat i röktestet)
 - [x] SAM-mask från text och återställning av originalets pixlar utanför masken
 - [ ] Jämföra Nano Banana 2, gpt-image-2 och FLUX.2 pro edit på verkliga rum (ersätter bildtestet i etapp 0)
 - [ ] Markering av föremål genom tryck: Behåll, Byt, Ta bort
 - [ ] Töm rummet
 - [ ] Gilla och ogilla delar av en skiss, spår och versioner, jämför sida vid sida
-- [ ] Palett med NCS- och hex-koder, uppskattade koder märkta
+- [x] NCS-koder i svaren som färgprov, märkta ungefärliga
+- [ ] Palett för rummet med NCS- och hex-koder, uppskattade koder ur foto märkta
 
 ### Etapp 2 · Minnet
 - [ ] Smakminne: `preferens_signal`, sammanfattad profil, skärmen Min smak
@@ -83,13 +82,14 @@ Ordning enligt `docs/design.md`, avsnitt 17. Bocka av när klart.
 Saker som saknas eller är tillfälliga i nuvarande version. Flytta upp till Nästa steg när de blir viktiga.
 
 - Webbläsarens taligenkänning är osäker i appar på iPhones hemskärm. Om den inte fungerar där visas tipset om tangentbordets mikrofon. Fungerar det dåligt: egen inspelning och tal till text i etapp R.
-
 - Inget sätt att ta bort eller byta ett enskilt foto i appen. Testanvändarens rum har dubbletter från före 2026-09-27 kväll; de gör ingen skada men kan städas när borttagning finns.
 - Rådgivaren ser högst 16 bilder per rum, de äldsta. Senare bilder utelämnas utan att användaren får veta det.
 - Användaren kan inte byta sitt lösenord själv, det görs i Supabase.
 - Var vi är går inte att läsa utan uppkoppling.
 - Supabases gratisprojekt pausas efter en tids inaktivitet.
-- Testsviten körs för hand.
+- Testsviten körs för hand, och promptändringar kan bara provas i drift (steg 2 ovan).
+- NCS-färgproven är en approximation (w3color). Ingen omräkning är exakt; testanvändaren kan bedöma hur fel den är.
+- Testanvändarens första samtal har långa svar från prompt 0.1 och dubbla bilder. Hon kan börja ett nytt rum under Mer.
 - Vännen ser inte skisserna den beställt, bara att de finns. Den kan inte kommentera detaljer i dem.
 - Skisser sparas omonterade och monteras i telefonen varje gång de visas. Går inte att dela eller spara som färdig bild än.
 - Webbsökningens verktygsversion (`web_search_20250305`) är den äldsta som stöds. Nyare versioner finns.
