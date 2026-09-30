@@ -143,3 +143,28 @@ export function fillBoxes(mask: Uint8Array, w: number, h: number, platser: Plats
     for (let y = y0; y < y1; y++) mask.fill(255, y * w + x0, y * w + x1)
   }
 }
+
+/**
+ * Replace a mask by the rectangle around it, grown by a share of the image.
+ * A new sofa or rug rarely has the old one's outline; a silhouette mask would
+ * leave pieces of the old one showing around the new.
+ */
+export function boxAround(mask: Uint8Array, w: number, h: number, share: number, into: Uint8Array): boolean {
+  let x0 = w, y0 = h, x1 = -1, y1 = -1
+  for (let y = 0; y < h; y++) {
+    const rad = y * w
+    for (let x = 0; x < w; x++) {
+      if (!mask[rad + x]) continue
+      if (x < x0) x0 = x
+      if (x > x1) x1 = x
+      if (y < y0) y0 = y
+      if (y > y1) y1 = y
+    }
+  }
+  if (x1 < 0) return false
+  const m = Math.round(Math.max(w, h) * share)
+  x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m)
+  x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m)
+  for (let y = y0; y <= y1; y++) into.fill(255, y * w + x0, y * w + x1 + 1)
+  return true
+}

@@ -103,3 +103,20 @@ export function cleanPlatser(platser: unknown): Plats[] {
 export function dayStart(now = new Date()): string {
   return new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
 }
+
+/**
+ * Retry a storage or database call. On the free plan, Supabase refuses
+ * requests when too many connections are open ("Too many connections").
+ */
+export async function withRetry<T>(fn: () => Promise<T>, tries = 4, wait = (i: number) => 400 * 2 ** i): Promise<T> {
+  let last: unknown;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      if (i < tries - 1) await new Promise((r) => setTimeout(r, wait(i)));
+    }
+  }
+  throw last;
+}

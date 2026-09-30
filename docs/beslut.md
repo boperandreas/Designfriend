@@ -95,3 +95,8 @@ Format:
 **Varför:** Vännen vill visa skisser, och promptregler stoppade det inte. En skiss kostar pengar och tid. Ett förslag som användaren själv startar ger henne kontrollen, och vännens idé blir en funktion i stället för tjat.
 **Följder:** `skiss.status` kan vara `forslag`. `chat` avgör med en ordlista (`bersOmSkiss`) om användaren bett att få se något; det är en kostnadsspärr, inte en regel om tonen, och därför i koden. Förslag räknas inte mot dygnstaket förrän de startas.
 **Alternativ som valdes bort:** Fler promptskärpningar; ta bort verktyget när användaren inte bett om bild (då påstår vännen att den inte kan göra skisser); en separat modell som bedömer begäran (fördröjning och kostnad).
+
+### 2026-09-29 · Skisser steg för steg, och rektangulära masker
+**Varför:** Man arbetar med en skiss genom att rätta den, inte genom att börja om. En konturmask fungerar för att ta bort men inte för att byta mot något med annan form.
+**Följder:** Appen sparar den monterade skissen, och nästa skiss utgår från den när användaren ber om ändringar i skissen. Utanför det som ändras är varje pixel kvar från den förra skissen, så det användaren redan sett ligger kvar. Masken är rektangeln runt föremålet med 5 % marginal, så lite mer än föremålet ritas om.
+**Alternativ som valdes bort:** Montera skissen i serverfunktionen (processortid på gratisnivån); låta vännen beskriva alla tidigare ändringar på nytt (varje skiss blev en ny tolkning).

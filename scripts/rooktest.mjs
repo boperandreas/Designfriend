@@ -178,6 +178,7 @@ const rows = [];
 const skissSteg = process.env.SKISS !== "0";
 const texter = Array.from({ length: N }, (_, i) => MEDDELANDEN[i % MEDDELANDEN.length]);
 if (skissSteg) texter.push("Kan du visa bordet på bilden jag gillar framför soffan, i stället för den grå fåtöljen?");
+const stegSteg = skissSteg && process.env.STEG !== "0";
 for (let i = 0; i < texter.length; i++) {
   const text = texter[i];
   const t0 = performance.now();
@@ -199,6 +200,33 @@ for (let i = 0; i < texter.length; i++) {
   rows.push({ message: i + 1, first_byte_ms: Math.round(first ?? total), total_ms: Math.round(total), reply_bytes: bytes });
 }
 console.table(rows);
+
+// Build on the last sketch: wait for it, then ask for a change "in the sketch".
+async function vantaPaSenaste() {
+  const t0 = performance.now();
+  while (performance.now() - t0 < 150_000) {
+    const rad = (await (await must(await fetch(
+      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&status=neq.forslag&select=id,status&order=skapad.desc&limit=1`, { headers: h },
+    ), "read sketch")).json())[0];
+    if (rad && (rad.status === "klar" || rad.status === "fel")) return rad;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return null;
+}
+if (stegSteg) {
+  const forsta = await vantaPaSenaste();
+  if (forsta?.status === "klar") {
+    const res = await must(await fetch(`${URL_}/functions/v1/chat`, {
+      method: "POST", headers: { ...h, "Content-Type": "application/json" },
+      body: JSON.stringify({ projekt_id: projekt.id, text: "Sista skissen: gör bordsskivan mörkare, resten ska vara som i skissen.", bild_ids: [] }),
+    }), "step message");
+    await res.text();
+    const steg = (await (await must(await fetch(
+      `${URL_}/rest/v1/skiss?projekt_id=eq.${projekt.id}&select=id,kalla_skiss_id,status&order=skapad.desc&limit=1`, { headers: h },
+    ), "read step")).json())[0];
+    console.log("Step sketch builds on the previous one:", Boolean(steg?.kalla_skiss_id && steg.kalla_skiss_id === forsta.id));
+  }
+}
 
 // The last message asks for a sketch. Wait for the background job.
 if (skissSteg) {

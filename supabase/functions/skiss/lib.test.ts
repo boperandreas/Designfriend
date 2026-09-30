@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cleanOmraden, cleanPlatser, editInput, editPrompt, headNoun, pickMasks } from "./lib.ts";
+import { cleanOmraden, cleanPlatser, editInput, editPrompt, headNoun, pickMasks, withRetry } from "./lib.ts";
 
 Deno.test("headNoun keeps the last word of a phrase", () => {
   assert.equal(headNoun("dark grey armchair"), "armchair");
@@ -46,4 +46,12 @@ Deno.test("editInput adapts to the model", () => {
   assert.equal(editInput("fal-ai/nano-banana-2/edit", "x", "u").resolution, "2K");
   assert.equal(editInput("openai/gpt-image-2/edit", "x", "u").quality, "medium");
   assert.equal(editInput("fal-ai/flux-2-pro/edit", "x", "u").num_images, undefined);
+});
+
+Deno.test("withRetry tries again after a failure", async () => {
+  let n = 0;
+  const v = await withRetry(async () => { if (++n < 3) throw new Error("Too many connections"); return "ok"; }, 4, () => 0);
+  assert.equal(v, "ok");
+  assert.equal(n, 3);
+  await assert.rejects(withRetry(async () => { throw new Error("x"); }, 2, () => 0));
 });

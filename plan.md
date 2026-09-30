@@ -91,7 +91,7 @@ Saker som saknas eller är tillfälliga i nuvarande version. Flytta upp till Nä
 - NCS-färgproven är en approximation (w3color). Ingen omräkning är exakt; testanvändaren kan bedöma hur fel den är.
 - Testanvändarens första samtal har långa svar från prompt 0.1 och dubbla bilder. Hon kan börja ett nytt rum under Mer.
 - Vännen ser inte skisserna den beställt, bara att de finns. Den kan inte kommentera detaljer i dem.
-- Skisser sparas omonterade och monteras i telefonen varje gång de visas. Går inte att dela eller spara som färdig bild än.
+- Skisser monteras i telefonen första gången de visas och sparas sedan som färdig bild. Det finns ingen knapp för att spara eller dela än.
 - Webbsökningens verktygsversion (`web_search_20250305`) är den äldsta som stöds. Nyare versioner finns.
 
 ## Så börjar en ny session

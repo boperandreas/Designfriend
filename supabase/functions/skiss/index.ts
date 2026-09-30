@@ -24,7 +24,7 @@
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { fetchFile, runFal, type FalResult } from "../_shared/fal.ts";
-import { cleanOmraden, cleanPlatser, dayStart, DEFAULT_MODEL, editInput, headNoun, pickMasks, SAM_MODEL } from "./lib.ts";
+import { cleanOmraden, cleanPlatser, dayStart, DEFAULT_MODEL, editInput, headNoun, pickMasks, SAM_MODEL, withRetry } from "./lib.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
@@ -33,7 +33,7 @@ const PER_DYGN = Number(Deno.env.get("SKISS_PER_DYGN") ?? "20");
 
 interface Skiss {
   id: string; projekt_id: string; user_id: string; kalla_bild_id: string | null;
-  instruktion: string; omraden: string[]; platser: unknown; forlagor: string[];
+  instruktion: string; omraden: string[]; platser: unknown; forlagor: string[]; kalla_skiss_id: string | null;
 }
 
 function json(status: number, body: unknown) {
@@ -41,7 +41,10 @@ function json(status: number, body: unknown) {
 }
 
 async function fail(sb: SupabaseClient, id: string, fel: string) {
-  await sb.from("skiss").update({ status: "fel", fel, klar: new Date().toISOString() }).eq("id", id);
+  await withRetry(async () => {
+    const { error } = await sb.from("skiss").update({ status: "fel", fel, klar: new Date().toISOString() }).eq("id", id);
+    if (error) throw new Error(error.message);
+  }).catch((e) => console.error("could not mark sketch as failed", id, e));
 }
 
 async function samOnce(imageUrl: string, prompt: string, key: string): Promise<FalResult> {
@@ -80,14 +83,31 @@ async function run(sb: SupabaseClient, s: Skiss, key: string) {
       return;
     }
 
-    const { data: bild } = s.kalla_bild_id
-      ? await sb.from("bild").select("sokvag").eq("id", s.kalla_bild_id).maybeSingle()
-      : { data: null };
-    if (!bild) {
+    // The image to edit: an earlier sketch as it was shown, or the room photo.
+    let grund: string | null = null;
+    if (s.kalla_skiss_id) {
+      const { data: tidigare } = await withRetry(async () => {
+        const r = await sb.from("skiss").select("visad_sokvag,sokvag").eq("id", s.kalla_skiss_id!).maybeSingle();
+        if (r.error) throw new Error(r.error.message);
+        return r;
+      });
+      grund = tidigare?.visad_sokvag ?? tidigare?.sokvag ?? null;
+      timing.fran_skiss = tidigare?.visad_sokvag ? "visad" : tidigare?.sokvag ? "ra" : "saknas";
+    }
+    if (!grund && s.kalla_bild_id) {
+      const { data: bild } = await sb.from("bild").select("sokvag").eq("id", s.kalla_bild_id).maybeSingle();
+      grund = bild?.sokvag ?? null;
+    }
+    if (!grund) {
       await fail(sb, s.id, "Fotot som skulle ändras finns inte längre.");
       return;
     }
-    const signed = await sb.storage.from("bilder").createSignedUrl(bild.sokvag, 900);
+    const grundVag = grund;
+    const signed = await withRetry(async () => {
+      const r = await sb.storage.from("bilder").createSignedUrl(grundVag, 900);
+      if (!r.data?.signedUrl) throw new Error(`sign: ${r.error?.message}`);
+      return r;
+    });
     if (!signed.data?.signedUrl) throw new Error("could not sign source photo");
     const imageUrl = signed.data.signedUrl;
 
@@ -116,22 +136,29 @@ async function run(sb: SupabaseClient, s: Skiss, key: string) {
     timing.omraden = omraden.length;
 
     // Copy everything into our own storage; fal's copies expire in ten minutes.
+    // One file at a time, with retries: the free plan allows few connections.
     const mapp = `${s.user_id}/${s.projekt_id}`;
     const sokvag = `${mapp}/skiss-${s.id}.jpg`;
     const [resultat, ...masker] = await Promise.all([fetchFile(resultUrl), ...maskUrls.map(fetchFile)]);
-    const up = await sb.storage.from("bilder").upload(sokvag, resultat, { contentType: "image/jpeg", upsert: true });
-    if (up.error) throw new Error(`upload: ${up.error.message}`);
-    const maskVagar = await Promise.all(masker.map(async (m, i) => {
+    const spara = (p: string, fil: Blob, typ: string) => withRetry(async () => {
+      const r = await sb.storage.from("bilder").upload(p, fil, { contentType: typ, upsert: true });
+      if (r.error) throw new Error(`upload ${p}: ${r.error.message}`);
+    });
+    await spara(sokvag, resultat, "image/jpeg");
+    const maskVagar: string[] = [];
+    for (const [i, m] of masker.entries()) {
       const p = `${mapp}/skiss-${s.id}-mask-${i}.png`;
-      const r = await sb.storage.from("bilder").upload(p, m, { contentType: "image/png", upsert: true });
-      if (r.error) throw new Error(`mask upload: ${r.error.message}`);
-      return p;
-    }));
+      await spara(p, m, "image/png");
+      maskVagar.push(p);
+    }
 
-    const { error } = await sb.from("skiss").update({
-      status: "klar", sokvag, masker: maskVagar, modell: MODEL, ms: ms(), klar: new Date().toISOString(),
-    }).eq("id", s.id);
-    if (error) throw new Error(`update: ${error.message}`);
+    await withRetry(async () => {
+      const { error } = await sb.from("skiss").update({
+        status: "klar", sokvag, masker: maskVagar, grund_sokvag: grundVag, modell: MODEL, ms: ms(),
+        klar: new Date().toISOString(),
+      }).eq("id", s.id);
+      if (error) throw new Error(`update: ${error.message}`);
+    });
     timing.total_ms = ms();
     console.log(JSON.stringify({ event: "skiss_timing", ...timing }));
   } catch (e) {
@@ -168,7 +195,7 @@ Deno.serve(async (req) => {
   // Claim the row, so a repeated call never starts the same job twice.
   const { data: skiss } = await sb.from("skiss").update({ status: "pagar" })
     .eq("id", payload.skiss_id).in("status", ["ny", "forslag"])
-    .select("id,projekt_id,user_id,kalla_bild_id,instruktion,omraden,platser,forlagor").maybeSingle();
+    .select("id,projekt_id,user_id,kalla_bild_id,kalla_skiss_id,instruktion,omraden,platser,forlagor").maybeSingle();
   if (!skiss) return json(409, { error: "Skissen är redan igång eller klar." });
 
   EdgeRuntime.waitUntil(run(sb, skiss as Skiss, key));
