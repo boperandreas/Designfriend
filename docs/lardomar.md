@@ -248,3 +248,7 @@ Format:
 **Orsak:** Skissfunktionen laddade upp resultat och masker samtidigt, och appen hämtade alla skissers filer samtidigt. Supabases gratisnivå tillåter få anslutningar. Masken följde det gamla föremålets kontur, så en ny form med annan kontur klipptes. Varje skiss utgick från originalfotot.
 **Åtgärd:** En fil i taget med nya försök, i funktionen och i appen. Masken är rektangeln runt föremålet med 5 % marginal. Appen sparar skissen som den visas (`visad_sokvag`), och en ny skiss kan bygga på den (`kalla_skiss_id`, verktygets `fran_skiss`). Prompt 0.3.1. Röktestet ber om en ändring i sista skissen.
 **Regel:** Allt som gör många anrop mot Supabase gör dem ett i taget, med nya försök.
+
+### 2026-09-30 · Ingen mening före stegskisser
+**Hände:** I båda röktesterna efter "skisser steg för steg" beställde vännen stegskissen utan att skriva något. Första skissen fick en mening.
+**Åtgärd:** Prompt 0.3.2 och beskrivningen av `fran_skiss` säger att meningen gäller även när vännen bygger vidare.

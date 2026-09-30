@@ -101,6 +101,7 @@ export const SKISS_TOOL = {
       fran_skiss: {
         type: "boolean",
         description: "true när hon vill ändra i den senaste skissen ('sista bilden', 'i skissen', 'lägg tillbaka…'). " +
+          "Skriv även då en kort mening till henne före anropet. " +
           "Skissen utgår då från den senaste färdiga skissen, och allt som redan ändrats där ligger kvar exakt. " +
           "Beskriv då bara den nya ändringen, och namnge föremålen som de ser ut i den skissen.",
       },
